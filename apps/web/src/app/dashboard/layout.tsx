@@ -47,8 +47,9 @@ const VENDOR_NAV: NavItem[] = [
   { href: "/dashboard/vendor/orders", label: "Orders", icon: ShoppingCart, badge: "5" },
   { href: "/dashboard/vendor/hs-codes", label: "HS Codes AI", icon: FileText },
   { href: "/dashboard/vendor/documents", label: "Documents", icon: Shield },
-  { href: "/dashboard/vendor/wallet", label: "Wallet", icon: Wallet },
   { href: "/dashboard/vendor/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/dashboard/vendor/premium", label: "Premium Plan", icon: Wallet },
+  { href: "/dashboard/vendor/wallet", label: "Wallet", icon: Wallet },
 ];
 
 const CARRIER_NAV: NavItem[] = [
@@ -65,6 +66,7 @@ const CUSTOMER_NAV: NavItem[] = [
   { href: "/dashboard/customer", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/customer/orders", label: "My Orders", icon: ShoppingCart },
   { href: "/dashboard/customer/track", label: "Track Shipment", icon: Truck },
+  { href: "/dashboard/customer/loyalty", label: "Loyalty & Rewards", icon: BarChart3 },
   { href: "/dashboard/customer/wishlist", label: "Wishlist", icon: Package },
   { href: "/dashboard/customer/addresses", label: "Addresses", icon: FileText },
   { href: "/dashboard/customer/wallet", label: "Wallet", icon: Wallet },

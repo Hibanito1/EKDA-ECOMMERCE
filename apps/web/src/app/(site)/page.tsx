@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { SmartRecommendations } from "@/components/ai/SmartRecommendations";
+import { PriceIntelligence } from "@/components/ai/PriceIntelligence";
 import {
   ArrowRight,
   Shield,
@@ -477,6 +479,16 @@ export default function HomePage() {
               </motion.div>
             ))}
           </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Smart Recommendations ─────────────────────────────── */}
+      <SmartRecommendations />
+
+      {/* ─── Price Intelligence ──────────────────────────────────── */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <PriceIntelligence />
         </div>
       </section>
 

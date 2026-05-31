@@ -10,6 +10,15 @@ export const metadata: Metadata = {
     default: "EKDA — Africa's Premier Cross-Border Marketplace",
     template: "%s | EKDA",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "EKDA",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   description:
     "Shop African groceries, dried produce, and commodities worldwide. Import cars, electronics, and machinery to Nigeria. Powered by smart logistics and AI compliance.",
   keywords: [

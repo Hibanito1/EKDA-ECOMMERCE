@@ -42,10 +42,22 @@ const NAV_LINKS = [
     description: "Compare carriers, track shipments",
   },
   {
-    label: "Vendors",
-    href: "/vendors",
-    icon: "🏪",
-    description: "Sell on EKDA marketplace",
+    label: "B2B",
+    href: "/b2b",
+    icon: "🏗️",
+    description: "Enterprise & bulk buyer portal",
+  },
+  {
+    label: "Learn",
+    href: "/learn",
+    icon: "📚",
+    description: "Free trade courses & guides",
+  },
+  {
+    label: "Green Trade",
+    href: "/sustainability",
+    icon: "🌱",
+    description: "Carbon offset & farmer support",
   },
 ];
 

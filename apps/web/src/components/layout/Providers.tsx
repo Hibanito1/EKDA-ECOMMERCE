@@ -1,7 +1,8 @@
 "use client";
 
 import { ThemeProvider } from "next-themes";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { AIChatAssistant } from "@/components/ai/ChatAssistant";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export function Providers({ children }: { children: ReactNode }) {
       disableTransitionOnChange
     >
       {children}
+      <AIChatAssistant />
     </ThemeProvider>
   );
 }
