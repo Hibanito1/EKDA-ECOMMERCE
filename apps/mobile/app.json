@@ -73,16 +73,6 @@
           "image": "./assets/splash.png",
           "resizeMode": "contain"
         }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#16a34a",
-          "sounds": [
-            "./assets/notification.wav"
-          ]
-        }
       ]
     ],
     "experiments": {
@@ -98,13 +88,6 @@
       },
       "demoMode": true,
       "apiUrl": "https://ekda-ecommerce.vercel.app"
-    },
-    "owner": "ekda_io",
-    "updates": {
-      "url": "https://u.expo.dev/ekda-marketplace-app"
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
     }
   }
 }
