@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { SmartRecommendations } from "@/components/ai/SmartRecommendations";
 import { PriceIntelligence } from "@/components/ai/PriceIntelligence";
+import { JsonLd, generateOrganizationSchema, generateMarketplaceSchema } from "@/components/seo/JsonLd";
 import {
   ArrowRight,
   Shield,
@@ -170,6 +171,8 @@ const itemVariants = {
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      <JsonLd data={generateOrganizationSchema()} />
+      <JsonLd data={generateMarketplaceSchema()} />
       {/* ─── Hero Section ──────────────────────────────────── */}
       <section className="hero-gradient min-h-[90vh] flex items-center relative overflow-hidden">
         {/* Background decoration */}

@@ -19,6 +19,16 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  alternates: {
+    canonical: "https://ekda.io",
+    languages: { "en-US": "https://ekda.io/en", "yo-NG": "https://ekda.io/yo" },
+  },
+  category: "shopping",
   description:
     "Shop African groceries, dried produce, and commodities worldwide. Import cars, electronics, and machinery to Nigeria. Powered by smart logistics and AI compliance.",
   keywords: [
