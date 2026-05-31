@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { aiChatLimiter, getIdentifier } from "@/lib/rate-limit";
+import { aiLogger } from "@/lib/logger";
 
 const SYSTEM_PROMPT = `You are EKDA AI — an expert trade and shopping assistant for EKDA Marketplace, Africa's premier cross-border e-commerce platform.
 
@@ -29,6 +31,18 @@ If asked about pricing, note prices can vary and recommend checking the live mar
 Always prioritize customer safety and escrow protection.`;
 
 export async function POST(req: NextRequest) {
+  const startTime = Date.now();
+  const identifier = getIdentifier(req);
+
+  // Rate limiting
+  const rl = aiChatLimiter(identifier);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: rl.message || "Rate limit exceeded", retry_after: Math.ceil(((rl as any).resetAt - Date.now()) / 1000) },
+      { status: 429, headers: { "Retry-After": "60" } }
+    );
+  }
+
   try {
     const { message, history = [] } = await req.json();
 
@@ -52,10 +66,14 @@ export async function POST(req: NextRequest) {
     // Smart contextual responses
     const reply = generateSmartReply(message.toLowerCase(), history);
 
+    aiLogger.ai("chat_message_processed", "ekda-classifier", Date.now() - startTime, {
+      metadata: { message_length: message.length, has_products: (reply.products?.length || 0) > 0 }
+    });
+
     return NextResponse.json(reply);
   } catch (error) {
-    console.error("AI Chat error:", error);
-    return NextResponse.json({ error: "Chat service unavailable" }, { status: 500 });
+    aiLogger.error("AI Chat error", { error: String(error) });
+    return NextResponse.json({ error: "Chat service unavailable. Please try again shortly." }, { status: 500 });
   }
 }
 

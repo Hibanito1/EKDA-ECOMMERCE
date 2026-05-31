@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { hsCodeLimiter, getIdentifier } from "@/lib/rate-limit";
+import { aiLogger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
+  const startTime = Date.now();
+  const identifier = getIdentifier(req);
+  
+  const rl = hsCodeLimiter(identifier);
+  if (!rl.success) {
+    return NextResponse.json({ error: "Rate limit exceeded for HS Code classifications.", retry_after: 60 }, { status: 429 });
+  }
+
   try {
     const { product_name, description, category, origin_country, images } =
       await req.json();
