@@ -1,0 +1,66 @@
+{
+  "expo": {
+    "name": "EKDA",
+    "slug": "ekda-marketplace",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a1628"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "io.ekda.marketplace",
+      "infoPlist": {
+        "NSCameraUsageDescription": "EKDA uses the camera to scan documents and verify products.",
+        "NSPhotoLibraryUsageDescription": "EKDA accesses your photos to upload product images and documents."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0a1628"
+      },
+      "package": "io.ekda.marketplace",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0a1628",
+          "image": "./assets/splash.png",
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-notifications"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "scheme": "ekda",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ekda-marketplace-app"
+      }
+    }
+  }
+}
