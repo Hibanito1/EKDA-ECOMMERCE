@@ -1,11 +1,12 @@
 {
   "expo": {
-    "name": "EKDA",
+    "name": "EKDA Marketplace",
     "slug": "ekda-marketplace",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -15,9 +16,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "io.ekda.marketplace",
+      "buildNumber": "1",
       "infoPlist": {
         "NSCameraUsageDescription": "EKDA uses the camera to scan documents and verify products.",
-        "NSPhotoLibraryUsageDescription": "EKDA accesses your photos to upload product images and documents."
+        "NSPhotoLibraryUsageDescription": "EKDA accesses your photos to upload product images and documents.",
+        "NSMicrophoneUsageDescription": "EKDA uses the microphone for voice search features."
       }
     },
     "android": {
@@ -26,11 +29,24 @@
         "backgroundColor": "#0a1628"
       },
       "package": "io.ekda.marketplace",
+      "versionCode": 1,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "INTERNET"
+        "INTERNET",
+        "RECORD_AUDIO"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "ekda.io" },
+            { "scheme": "ekda" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
       ]
     },
     "web": {
@@ -48,19 +64,33 @@
           "resizeMode": "contain"
         }
       ],
-      "expo-notifications"
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#16a34a",
+          "sounds": ["./assets/notification.wav"]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "scheme": "ekda",
     "extra": {
-      "router": {
-        "origin": false
-      },
+      "router": { "origin": false },
       "eas": {
         "projectId": "ekda-marketplace-app"
-      }
+      },
+      "demoMode": true,
+      "apiUrl": "https://ekda-ecommerce.vercel.app"
+    },
+    "owner": "ekda_io",
+    "updates": {
+      "url": "https://u.expo.dev/ekda-marketplace-app"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }

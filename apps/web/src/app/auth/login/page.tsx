@@ -4,11 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Chrome } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Zap } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase/client";
+import { DEMO_USERS } from "@/lib/demo";
+
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,6 +34,19 @@ export default function LoginPage() {
     if (!validate()) return;
     setLoading(true);
     try {
+      // Demo mode login bypass
+      if (DEMO_MODE && form.email.endsWith("@ekda.io")) {
+        const res = await fetch("/api/demo/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: form.email, password: form.password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        toast.success("🎭 Demo: Welcome " + data.user.role + "!");
+        router.push(data.redirect_to);
+        return;
+      }
       const { data, error } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.password,
@@ -171,6 +187,30 @@ export default function LoginPage() {
           Create account
         </Link>
       </p>
+
+      {DEMO_MODE && (
+        <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-200 dark:border-indigo-800">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Zap className="h-3.5 w-3.5 text-indigo-600" />
+            <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-400">Quick Demo Login</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {Object.entries(DEMO_USERS).map(([role, user]) => (
+              <button
+                key={role}
+                type="button"
+                onClick={() => {
+                  setForm({ email: user.email, password: user.password });
+                }}
+                className="text-[10px] bg-white dark:bg-ekda-dark px-2.5 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors font-medium capitalize"
+              >
+                {role === "admin" ? "⚡" : role === "vendor" ? "🏪" : role === "carrier" ? "🚢" : role === "enterprise" ? "🏢" : "🛍️"} {role}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-1.5">Password: Demo@12345 for all accounts</p>
+        </div>
+      )}
 
       <p className="text-center text-xs text-muted-foreground mt-4">
         By signing in, you agree to our{" "}
