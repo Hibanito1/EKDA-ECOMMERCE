@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase/client";
 import type { UserRole } from "@ekda/shared";
 import { USER_ROLE_INFO } from "@ekda/shared";
+import { validateRegister, validateKYCBusiness, hasErrors } from "@/lib/validation";
 
 const STEPS = ["Choose Role", "Account Details", "Business Info"];
 
@@ -47,27 +48,33 @@ function RegisterPageContent() {
     setErrors((prev) => { const e = { ...prev }; delete e[key]; return e; });
   };
 
+  /** Uses @ekda/validators → validateRegister via @/lib/validation */
   const validateStep1 = () => {
-    const errs: Record<string, string> = {};
-    if (!form.full_name.trim()) errs.full_name = "Full name is required";
-    if (!form.email) errs.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = "Invalid email";
-    if (!form.password) errs.password = "Password is required";
-    else if (form.password.length < 8) errs.password = "Min 8 characters";
+    const errs = validateRegister({
+      full_name: form.full_name,
+      email: form.email,
+      password: form.password,
+      phone: form.phone,
+      role: role ?? "",
+    });
     setErrors(errs);
-    return Object.keys(errs).length === 0;
+    return !hasErrors(errs);
   };
 
+  /** Uses @ekda/validators → validateKYCBusiness via @/lib/validation */
   const validateStep2 = () => {
-    const errs: Record<string, string> = {};
     if (role === "vendor" || role === "enterprise") {
-      if (!form.business_name.trim()) errs.business_name = "Business name is required";
+      const errs = validateKYCBusiness({ business_name: form.business_name });
+      setErrors(errs);
+      return !hasErrors(errs);
     }
     if (role === "carrier") {
+      const errs: Record<string, string> = {};
       if (!form.company_name.trim()) errs.company_name = "Company name is required";
+      setErrors(errs);
+      return !hasErrors(errs);
     }
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
+    return true;
   };
 
   const handleNext = () => {

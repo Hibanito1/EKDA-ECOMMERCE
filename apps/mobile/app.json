@@ -6,13 +6,15 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#0a1628"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "io.ekda.marketplace",
@@ -42,10 +44,18 @@
           "action": "VIEW",
           "autoVerify": true,
           "data": [
-            { "scheme": "https", "host": "ekda.io" },
-            { "scheme": "ekda" }
+            {
+              "scheme": "https",
+              "host": "ekda.io"
+            },
+            {
+              "scheme": "ekda"
+            }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -63,14 +73,6 @@
           "image": "./assets/splash.png",
           "resizeMode": "contain"
         }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#16a34a",
-          "sounds": ["./assets/notification.wav"]
-        }
       ]
     ],
     "experiments": {
@@ -78,19 +80,14 @@
     },
     "scheme": "ekda",
     "extra": {
-      "router": { "origin": false },
+      "router": {
+        "origin": false
+      },
       "eas": {
         "projectId": "ekda-marketplace-app"
       },
       "demoMode": true,
       "apiUrl": "https://ekda-ecommerce.vercel.app"
-    },
-    "owner": "ekda_io",
-    "updates": {
-      "url": "https://u.expo.dev/ekda-marketplace-app"
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
     }
   }
 }

@@ -30,6 +30,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import type { UserRole } from "@ekda/shared";
+import {
+  validateKYCPersonal,
+  validateKYCBusiness,
+  hasErrors,
+} from "@/lib/validation";
 
 const KYC_STEPS = [
   { id: "personal", title: "Personal Info", icon: User, description: "Basic identity details" },
@@ -201,7 +206,31 @@ export function KYCForm({ role, onComplete }: KYCFormProps) {
     }
   };
 
+  const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
+
   const handleNext = () => {
+    // Validate step 0 (Personal Info) using @ekda/validators
+    if (currentStepData.id === "personal") {
+      const errs = validateKYCPersonal({
+        full_name: formData.full_name,
+        date_of_birth: formData.date_of_birth,
+        nationality: formData.nationality,
+        phone: formData.phone,
+        email: formData.email,
+      });
+      setStepErrors(errs);
+      if (hasErrors(errs)) return;
+    }
+    // Validate step 2 (Business Details) using @ekda/validators
+    if (currentStepData.id === "business" && (role === "vendor" || role === "enterprise" || role === "carrier")) {
+      const errs = validateKYCBusiness({
+        business_name: formData.business_name,
+        registration_number: formData.registration_number,
+      });
+      setStepErrors(errs);
+      if (hasErrors(errs)) return;
+    }
+    setStepErrors({});
     setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

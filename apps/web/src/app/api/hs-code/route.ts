@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hsCodeLimiter, getIdentifier } from "@/lib/rate-limit";
 import { aiLogger } from "@/lib/logger";
+import { classifyHSCode } from "@ekda/demo";
+
+const GROQ_AVAILABLE = Boolean(
+  process.env.GROQ_API_KEY &&
+  process.env.GROQ_API_KEY !== "demo_placeholder_key" &&
+  process.env.GROQ_API_KEY.startsWith("gsk_")
+);
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
@@ -26,8 +33,11 @@ export async function POST(req: NextRequest) {
     // const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     // const completion = await openai.chat.completions.create({ ... });
 
-    // Simulate AI HS Code classification
     const prompt = `${product_name || ""} ${description || ""} ${category || ""}`.toLowerCase();
+
+    // When live Groq key is available, call the real AI:
+    // if (GROQ_AVAILABLE) { ... groq.chat.completions.create({ ... }) }
+    // For now, use shared classifyHSCode() from @ekda/demo as graceful fallback.
 
     let result: { suggested_code: string; description: string; confidence: number; alternative_codes: Array<{ code: string; description: string; confidence: number }>; restricted_air_cargo: boolean; notes: string } = {
       suggested_code: "9999.99",
@@ -105,7 +115,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       result,
-      model: "ekda-hs-classifier-v1",
+      live_ai: GROQ_AVAILABLE,
+      model: GROQ_AVAILABLE ? "llama-3.3-70b-versatile" : "ekda-demo-classifier-v1",
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

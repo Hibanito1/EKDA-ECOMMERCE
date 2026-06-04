@@ -1,235 +1,219 @@
+/**
+ * apps/mobile/app/(tabs)/index.tsx
+ *
+ * Home screen — now uses @ekda/shared and @ekda/demo for all data.
+ * No more inline mock arrays.
+ */
+
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  TextInput,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet,
+  Dimensions, TextInput,
 } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
+// ─── Shared packages ──────────────────────────────────────────────────────────
+import { PRODUCT_CATEGORIES, formatCurrency } from "@ekda/shared";
+import { FEATURED_PRODUCTS, MOCK_ORDERS } from "@ekda/demo";
+import { EMPTY_STATES } from "@ekda/ui";
+
 const { width } = Dimensions.get("window");
 
-const CATEGORIES = [
-  { icon: "🌿", label: "Groceries", href: "/(tabs)/export" },
-  { icon: "🌾", label: "Dried Produce", href: "/(tabs)/export" },
-  { icon: "🚗", label: "Vehicles", href: "/(tabs)/import" },
-  { icon: "📱", label: "Electronics", href: "/(tabs)/import" },
-  { icon: "⚙️", label: "Machinery", href: "/(tabs)/import" },
-  { icon: "❄️", label: "Frozen", href: "/(tabs)/export" },
-];
+export default function HomeTab({ user, cart, onCartUpdate, onNavigate }: {
+  user?: { name: string; wallet: number; loyaltyPoints: number };
+  cart?: Record<string, number>;
+  onCartUpdate?: (c: Record<string, number>) => void;
+  onNavigate?: (tab: string) => void;
+}) {
+  const cartTotal = Object.values(cart ?? {}).reduce((s, v) => s + v, 0);
+  const recentOrder = MOCK_ORDERS[0];
 
-const FEATURED_PRODUCTS = [
-  {
-    id: "1",
-    name: "Premium Dried Crayfish",
-    vendor: "Lagos Fresh Exports",
-    price: "₦8,500/kg",
-    image: "🦐",
-    type: "export",
-    rating: 4.9,
-  },
-  {
-    id: "2",
-    name: "iPhone 15 Pro Max",
-    vendor: "Dubai Electronics",
-    price: "₦1,150,000",
-    image: "📱",
-    type: "import",
-    rating: 4.9,
-  },
-  {
-    id: "3",
-    name: "Palm Oil — Pure Red",
-    vendor: "Ogun Premium",
-    price: "₦6,800/L",
-    image: "🫙",
-    type: "export",
-    rating: 4.7,
-  },
-];
+  // Build category list from the shared PRODUCT_CATEGORIES constant
+  const CATEGORIES = Object.entries(PRODUCT_CATEGORIES).map(([id, cat]) => ({
+    id,
+    icon: cat.icon,
+    label: cat.label,
+    href: cat.marketplaceType === "export" ? "/(tabs)/export" : "/(tabs)/import",
+  }));
 
-export default function HomeTab() {
+  const addToCart = (productId: string) => {
+    if (onCartUpdate && cart !== undefined) {
+      onCartUpdate({ ...cart, [productId]: (cart[productId] ?? 0) + 1 });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.greeting}>Good morning 👋</Text>
-            <Text style={styles.username}>Welcome to EKDA</Text>
-          </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.notifButton}>
-              <Text style={styles.notifIcon}>🔔</Text>
-              <View style={styles.notifBadge} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Search */}
-        <View style={styles.searchContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search products, vendors..."
-            placeholderTextColor="#9ca3af"
-          />
-        </View>
-
-        {/* Hero Banner */}
-        <LinearGradient
-          colors={["#0a1628", "#14532d"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.heroBanner}
-        >
-          <View>
-            <Text style={styles.heroBadge}>🌿 African Exports</Text>
-            <Text style={styles.heroTitle}>
-              Authentic African{"\n"}Goods Worldwide
-            </Text>
+        <LinearGradient colors={["#0a1628", "#0f2044", "#14532d"]} style={styles.header}>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.greeting}>Good day 👋</Text>
+              <Text style={styles.username}>{user?.name ?? "Welcome"}</Text>
+            </View>
             <TouchableOpacity
-              style={styles.heroButton}
-              onPress={() => router.push("/(tabs)/export")}
+              onPress={() => onNavigate?.("cart") ?? router.push("/(tabs)/cart" as any)}
+              style={styles.cartBtn}
             >
-              <Text style={styles.heroButtonText}>Shop Now →</Text>
+              <Text style={styles.cartBtnEmoji}>🛒</Text>
+              {cartTotal > 0 && (
+                <View style={styles.cartBadge}>
+                  <Text style={styles.cartBadgeText}>{cartTotal}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
-          <Text style={styles.heroEmoji}>🌍</Text>
+          <TouchableOpacity
+            style={styles.searchHint}
+            onPress={() => onNavigate?.("exports") ?? router.push("/(tabs)/export" as any)}
+          >
+            <Text style={styles.searchHintIcon}>🔍</Text>
+            <Text style={styles.searchHintText}>Search crayfish, garri, cars, phones...</Text>
+          </TouchableOpacity>
         </LinearGradient>
 
-        {/* Categories */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Browse Categories</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoriesScroll}
+        {/* Demo Mode Badge */}
+        <View style={styles.demoBanner}>
+          <Text style={styles.demoBannerIcon}>🎭</Text>
+          <Text style={styles.demoBannerText}>Demo Mode — All data is simulated</Text>
+        </View>
+
+        {/* Quick Stats */}
+        {user && (
+          <View style={styles.statsRow}>
+            {[
+              { emoji: "📦", label: "Active Orders", value: MOCK_ORDERS.filter(o => o.status !== "delivered").length },
+              { emoji: "💰", label: "Wallet", value: formatCurrency(user.wallet, "NGN") },
+              { emoji: "⭐", label: "Loyalty Pts", value: user.loyaltyPoints.toLocaleString() },
+            ].map(stat => (
+              <View key={stat.label} style={styles.statCard}>
+                <Text style={styles.statEmoji}>{stat.emoji}</Text>
+                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={styles.statLabel}>{stat.label}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Two Marketplaces */}
+        <Text style={styles.sectionTitle}>Two-Way Marketplace</Text>
+        <View style={styles.marketRow}>
+          <TouchableOpacity
+            style={styles.marketCard}
+            onPress={() => onNavigate?.("exports") ?? router.push("/(tabs)/export" as any)}
           >
-            {CATEGORIES.map((cat) => (
-              <TouchableOpacity
-                key={cat.label}
-                style={styles.categoryItem}
-                onPress={() => router.push(cat.href as any)}
-              >
-                <View style={styles.categoryIcon}>
-                  <Text style={styles.categoryEmoji}>{cat.icon}</Text>
-                </View>
-                <Text style={styles.categoryLabel}>{cat.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+            <LinearGradient colors={["#166534", "#14532d"]} style={styles.marketGradient}>
+              <Text style={styles.marketEmoji}>🌿</Text>
+              <Text style={styles.marketTitle}>African Exports</Text>
+              <Text style={styles.marketSub}>Groceries, dried produce, agri commodities</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.marketCard}
+            onPress={() => onNavigate?.("imports") ?? router.push("/(tabs)/import" as any)}
+          >
+            <LinearGradient colors={["#1e3a5f", "#1e40af"]} style={styles.marketGradient}>
+              <Text style={styles.marketEmoji}>🌍</Text>
+              <Text style={styles.marketTitle}>Global Imports</Text>
+              <Text style={styles.marketSub}>Cars, electronics, machinery to Nigeria</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
 
-        {/* Featured Products */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Products</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAll}>See all</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {FEATURED_PRODUCTS.map((product) => (
-              <TouchableOpacity key={product.id} style={styles.productCard}>
-                <View
-                  style={[
-                    styles.productImageBg,
-                    {
-                      backgroundColor:
-                        product.type === "export" ? "#dcfce7" : "#dbeafe",
-                    },
-                  ]}
-                >
-                  <Text style={styles.productEmoji}>{product.image}</Text>
-                  <View
-                    style={[
-                      styles.productTypeBadge,
-                      {
-                        backgroundColor:
-                          product.type === "export" ? "#16a34a" : "#2563eb",
-                      },
-                    ]}
-                  >
-                    <Text style={styles.productTypeText}>
-                      {product.type === "export" ? "Export" : "Import"}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName} numberOfLines={2}>
-                    {product.name}
+        {/* Active Order Tracker */}
+        {recentOrder && (
+          <>
+            <Text style={styles.sectionTitle}>Track Latest Order</Text>
+            <View style={styles.trackCard}>
+              <View style={styles.trackHeader}>
+                <Text style={styles.trackId}>{recentOrder.id}</Text>
+                <View style={styles.trackStatusBadge}>
+                  <Text style={styles.trackStatusText}>
+                    {recentOrder.cargo === "sea" ? "🚢" : "✈️"} {recentOrder.status.replace("_", " ")}
                   </Text>
-                  <Text style={styles.productVendor}>{product.vendor}</Text>
-                  <View style={styles.productFooter}>
-                    <Text style={styles.productPrice}>{product.price}</Text>
-                    <View style={styles.ratingRow}>
-                      <Text style={styles.ratingStar}>⭐</Text>
-                      <Text style={styles.ratingValue}>{product.rating}</Text>
-                    </View>
-                  </View>
                 </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+              </View>
+              <Text style={styles.trackProduct}>{recentOrder.product}</Text>
+              <View style={styles.trackProgress}>
+                <View style={styles.trackProgressBar}>
+                  <View style={[styles.trackProgressFill, { width: `${recentOrder.progress}%` as any }]} />
+                </View>
+                <Text style={styles.trackProgressText}>{recentOrder.progress}%</Text>
+              </View>
+              <Text style={styles.trackCarrier}>Carrier: {recentOrder.carrier}</Text>
+            </View>
+          </>
+        )}
 
-        {/* Two Marketplace Cards */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Two-Way Marketplace</Text>
-          <View style={styles.marketplaceCards}>
-            <TouchableOpacity
-              style={styles.marketCard}
-              onPress={() => router.push("/(tabs)/export")}
-            >
-              <LinearGradient
-                colors={["#166534", "#14532d"]}
-                style={styles.marketCardGradient}
-              >
-                <Text style={styles.marketCardEmoji}>🌿</Text>
-                <Text style={styles.marketCardTitle}>African Exports</Text>
-                <Text style={styles.marketCardSub}>
-                  Groceries, dried produce, agri commodities
+        {/* Featured Products from @ekda/demo */}
+        <Text style={styles.sectionTitle}>🌟 Featured Products</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.featuredScroll}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+        >
+          {FEATURED_PRODUCTS.map(p => (
+            <TouchableOpacity key={p.id} style={styles.smallCard}>
+              <View style={[styles.smallCardImg, { backgroundColor: p.airRestricted ? "#fff7ed" : "#f0fdf4" }]}>
+                <Text style={styles.smallCardEmoji}>{p.emoji}</Text>
+              </View>
+              <View style={styles.smallCardBody}>
+                <Text style={styles.smallCardName} numberOfLines={2}>{p.name}</Text>
+                <Text style={styles.smallCardPrice}>
+                  {formatCurrency(p.price, p.currency)}/{p.unit}
                 </Text>
-              </LinearGradient>
+                <TouchableOpacity
+                  style={styles.smallAddBtn}
+                  onPress={() => addToCart(p.id)}
+                >
+                  <Text style={styles.smallAddBtnText}>+ Add</Text>
+                </TouchableOpacity>
+              </View>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.marketCard}
-              onPress={() => router.push("/(tabs)/import")}
-            >
-              <LinearGradient
-                colors={["#1e40af", "#1d4ed8"]}
-                style={styles.marketCardGradient}
-              >
-                <Text style={styles.marketCardEmoji}>🌍</Text>
-                <Text style={styles.marketCardTitle}>Global Imports</Text>
-                <Text style={styles.marketCardSub}>
-                  Cars, electronics, machinery to Nigeria
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </View>
+          ))}
+        </ScrollView>
 
-        {/* Escrow Banner */}
+        {/* Categories from @ekda/shared */}
+        <Text style={styles.sectionTitle}>Browse Categories</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesScroll}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}
+        >
+          {CATEGORIES.map(cat => (
+            <TouchableOpacity
+              key={cat.id}
+              style={styles.categoryItem}
+              onPress={() => {
+                const tab = cat.href.includes("export") ? "exports" : "imports";
+                onNavigate?.(tab) ?? router.push(cat.href as any);
+              }}
+            >
+              <View style={styles.categoryIcon}>
+                <Text style={styles.categoryEmoji}>{cat.icon}</Text>
+              </View>
+              <Text style={styles.categoryLabel} numberOfLines={2}>{cat.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Escrow explanation */}
         <View style={styles.escrowBanner}>
-          <Text style={styles.escrowIcon}>🔒</Text>
-          <View style={styles.escrowContent}>
-            <Text style={styles.escrowTitle}>100% Escrow Protected</Text>
-            <Text style={styles.escrowText}>
-              Funds held safely. Released 50% at pickup, 50% at delivery.
-            </Text>
-          </View>
+          <Text style={styles.escrowBannerTitle}>🔒 100% Escrow Protected</Text>
+          <Text style={styles.escrowBannerText}>
+            Your payment is held safely by EKDA.{"\n"}
+            Released in 2 stages as your shipment progresses.
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -239,161 +223,58 @@ export default function HomeTab() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   scroll: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-    backgroundColor: "#fff",
-  },
-  headerLeft: {},
-  headerRight: {},
-  greeting: { fontSize: 13, color: "#6b7280" },
-  username: { fontSize: 22, fontWeight: "800", color: "#111827" },
-  notifButton: {
-    position: "relative",
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "#f3f4f6",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  notifIcon: { fontSize: 18 },
-  notifBadge: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#ef4444",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    height: 48,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    gap: 10,
-  },
-  searchIcon: { fontSize: 16 },
-  searchInput: { flex: 1, fontSize: 14, color: "#111827" },
-  heroBanner: {
-    marginHorizontal: 20,
-    borderRadius: 20,
-    padding: 24,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  heroBadge: {
-    color: "#86efac",
-    fontSize: 12,
-    fontWeight: "600",
-    backgroundColor: "rgba(34,197,94,0.15)",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 100,
-    alignSelf: "flex-start",
-    marginBottom: 10,
-    overflow: "hidden",
-  },
-  heroTitle: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "800",
-    lineHeight: 26,
-    marginBottom: 16,
-  },
-  heroButton: {
-    backgroundColor: "#16a34a",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-    alignSelf: "flex-start",
-  },
-  heroButtonText: { color: "#fff", fontWeight: "700", fontSize: 14 },
-  heroEmoji: { fontSize: 60 },
-  section: { paddingHorizontal: 20, marginBottom: 24 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
-  sectionTitle: { fontSize: 18, fontWeight: "800", color: "#111827", marginBottom: 14 },
-  seeAll: { fontSize: 14, color: "#16a34a", fontWeight: "600" },
-  categoriesScroll: { marginHorizontal: -20, paddingHorizontal: 20 },
-  categoryItem: { alignItems: "center", marginRight: 14, width: 70 },
-  categoryIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
+  header: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 20 },
+  headerTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
+  greeting: { color: "rgba(255,255,255,0.6)", fontSize: 13 },
+  username: { color: "#fff", fontSize: 20, fontWeight: "800" },
+  cartBtn: { position: "relative", width: 44, height: 44, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center" },
+  cartBtnEmoji: { fontSize: 20 },
+  cartBadge: { position: "absolute", top: -4, right: -4, width: 18, height: 18, borderRadius: 9, backgroundColor: "#ef4444", alignItems: "center", justifyContent: "center" },
+  cartBadgeText: { color: "#fff", fontSize: 9, fontWeight: "800" },
+  searchHint: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 12, paddingHorizontal: 14, height: 44 },
+  searchHintIcon: { fontSize: 16 },
+  searchHintText: { color: "rgba(255,255,255,0.45)", fontSize: 14 },
+  demoBanner: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#4c1d95", paddingHorizontal: 16, paddingVertical: 8 },
+  demoBannerIcon: { fontSize: 14 },
+  demoBannerText: { color: "rgba(255,255,255,0.8)", fontSize: 11, flex: 1 },
+  statsRow: { flexDirection: "row", backgroundColor: "#fff", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
+  statCard: { flex: 1, alignItems: "center", paddingVertical: 10 },
+  statEmoji: { fontSize: 18, marginBottom: 2 },
+  statValue: { fontSize: 13, fontWeight: "800", color: "#111827" },
+  statLabel: { fontSize: 9, color: "#9ca3af", fontWeight: "500" },
+  sectionTitle: { fontSize: 16, fontWeight: "800", color: "#111827", paddingHorizontal: 16, paddingTop: 20, paddingBottom: 10 },
+  marketRow: { flexDirection: "row", gap: 12, paddingHorizontal: 16 },
+  marketCard: { flex: 1, borderRadius: 18, overflow: "hidden" },
+  marketGradient: { padding: 16 },
+  marketEmoji: { fontSize: 28, marginBottom: 8 },
+  marketTitle: { color: "#fff", fontSize: 14, fontWeight: "800", marginBottom: 4 },
+  marketSub: { color: "rgba(255,255,255,0.65)", fontSize: 10, lineHeight: 14 },
+  trackCard: { marginHorizontal: 16, backgroundColor: "#fff", borderRadius: 16, padding: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+  trackHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+  trackId: { fontFamily: "monospace", fontSize: 12, color: "#16a34a", fontWeight: "700" },
+  trackStatusBadge: { backgroundColor: "#dbeafe", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 100 },
+  trackStatusText: { fontSize: 10, fontWeight: "700", color: "#1d4ed8", textTransform: "capitalize" },
+  trackProduct: { fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 10 },
+  trackProgress: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 },
+  trackProgressBar: { flex: 1, height: 6, backgroundColor: "#e5e7eb", borderRadius: 3 },
+  trackProgressFill: { height: "100%", backgroundColor: "#16a34a", borderRadius: 3 },
+  trackProgressText: { fontSize: 11, fontWeight: "700", color: "#16a34a" },
+  trackCarrier: { fontSize: 11, color: "#9ca3af" },
+  featuredScroll: { marginBottom: 4 },
+  smallCard: { width: 150, backgroundColor: "#fff", borderRadius: 14, overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 2 },
+  smallCardImg: { height: 90, alignItems: "center", justifyContent: "center" },
+  smallCardEmoji: { fontSize: 38 },
+  smallCardBody: { padding: 10 },
+  smallCardName: { fontSize: 11, fontWeight: "700", color: "#111827", marginBottom: 4 },
+  smallCardPrice: { fontSize: 12, fontWeight: "800", color: "#16a34a", marginBottom: 7 },
+  smallAddBtn: { backgroundColor: "#16a34a", borderRadius: 8, paddingVertical: 6, alignItems: "center" },
+  smallAddBtnText: { color: "#fff", fontSize: 11, fontWeight: "700" },
+  categoriesScroll: { marginBottom: 4 },
+  categoryItem: { alignItems: "center", width: 70 },
+  categoryIcon: { width: 56, height: 56, borderRadius: 16, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", marginBottom: 6, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
   categoryEmoji: { fontSize: 26 },
-  categoryLabel: { fontSize: 11, color: "#6b7280", fontWeight: "500", textAlign: "center" },
-  productCard: {
-    width: 160,
-    marginRight: 14,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  productImageBg: { height: 110, alignItems: "center", justifyContent: "center", position: "relative" },
-  productEmoji: { fontSize: 44 },
-  productTypeBadge: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 100,
-  },
-  productTypeText: { color: "#fff", fontSize: 10, fontWeight: "700" },
-  productInfo: { padding: 10 },
-  productName: { fontSize: 13, fontWeight: "700", color: "#111827", marginBottom: 2 },
-  productVendor: { fontSize: 11, color: "#9ca3af", marginBottom: 8 },
-  productFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  productPrice: { fontSize: 14, fontWeight: "800", color: "#16a34a" },
-  ratingRow: { flexDirection: "row", alignItems: "center", gap: 2 },
-  ratingStar: { fontSize: 10 },
-  ratingValue: { fontSize: 11, fontWeight: "600", color: "#374151" },
-  marketplaceCards: { flexDirection: "row", gap: 12 },
-  marketCard: { flex: 1, borderRadius: 16, overflow: "hidden" },
-  marketCardGradient: { padding: 18 },
-  marketCardEmoji: { fontSize: 28, marginBottom: 8 },
-  marketCardTitle: { color: "#fff", fontSize: 15, fontWeight: "800", marginBottom: 4 },
-  marketCardSub: { color: "rgba(255,255,255,0.65)", fontSize: 11, lineHeight: 15 },
-  escrowBanner: {
-    marginHorizontal: 20,
-    backgroundColor: "#f0fdf4",
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: "row",
-    gap: 12,
-    borderWidth: 1,
-    borderColor: "#bbf7d0",
-  },
-  escrowIcon: { fontSize: 24, marginTop: 2 },
-  escrowContent: { flex: 1 },
-  escrowTitle: { fontSize: 14, fontWeight: "700", color: "#14532d", marginBottom: 3 },
-  escrowText: { fontSize: 12, color: "#15803d", lineHeight: 17 },
+  categoryLabel: { fontSize: 10, color: "#6b7280", fontWeight: "500", textAlign: "center" },
+  escrowBanner: { margin: 16, backgroundColor: "#f0fdf4", borderRadius: 18, padding: 18, borderWidth: 1, borderColor: "#bbf7d0" },
+  escrowBannerTitle: { fontSize: 15, fontWeight: "800", color: "#14532d", marginBottom: 6 },
+  escrowBannerText: { fontSize: 12, color: "#15803d", lineHeight: 18 },
 });

@@ -20,124 +20,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProductCardSkeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@ekda/shared";
+import { IMPORT_PRODUCTS } from "@ekda/demo";
+import type { DemoProduct } from "@ekda/demo";
 import type { Product } from "@ekda/shared";
 
-const MOCK_IMPORT_PRODUCTS: Partial<Product>[] = [
-  {
-    id: "i1",
-    name: "2021 Toyota Camry XSE V6",
-    description: "Imported from USA. Clean Carfax, 45,000 miles. V6 3.5L engine, leather interior. Port of origin: Baltimore, MD.",
-    category: "vehicles",
-    marketplace_type: "import",
-    price: 18500000,
-    currency: "NGN",
-    unit: "unit",
-    min_order_quantity: 1,
-    weight_kg: 1497,
-    origin_country: "US",
-    rating: 4.8,
-    review_count: 143,
-    images: ["https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&q=80"],
-    cargo_recommendation: "sea",
-    hs_code: { code: "8703.24", description: "Motor cars, cylinder capacity 3000cc+", ai_confidence: 0.99, ai_suggested: true, verified_by_admin: true, restricted_air_cargo: true },
-    tags: ["toyota", "camry", "usa", "sedan"],
-  },
-  {
-    id: "i2",
-    name: "iPhone 15 Pro Max 256GB",
-    description: "Factory unlocked, US spec. Natural Titanium. All accessories included. Ships from our Dubai warehouse.",
-    category: "electronics",
-    marketplace_type: "import",
-    price: 1150000,
-    currency: "NGN",
-    unit: "unit",
-    min_order_quantity: 1,
-    weight_kg: 0.22,
-    origin_country: "AE",
-    rating: 4.9,
-    review_count: 3421,
-    images: ["https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&q=80"],
-    cargo_recommendation: "air",
-    hs_code: { code: "8517.13", description: "Smartphones & cellular phones", ai_confidence: 0.99, ai_suggested: true, verified_by_admin: true, restricted_air_cargo: false },
-    tags: ["iphone", "apple", "smartphone", "electronics"],
-  },
-  {
-    id: "i3",
-    name: "XCMG XCT25L5 Crane — 25 Ton",
-    description: "Brand new Chinese-made 25-ton mobile crane. FOB Shanghai. Complete documentation, CE certified.",
-    category: "machinery",
-    marketplace_type: "import",
-    price: 55000000,
-    currency: "NGN",
-    unit: "unit",
-    min_order_quantity: 1,
-    weight_kg: 35000,
-    origin_country: "CN",
-    rating: 4.7,
-    review_count: 28,
-    images: ["https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80"],
-    cargo_recommendation: "sea",
-    hs_code: { code: "8426.41", description: "Self-propelled cranes on tyres", ai_confidence: 0.98, ai_suggested: true, verified_by_admin: true, restricted_air_cargo: true },
-    tags: ["crane", "machinery", "construction", "xcmg"],
-  },
-  {
-    id: "i4",
-    name: "Sony BRAVIA XR 65\" OLED TV",
-    description: "2023 model. OLED panel, Google TV, Dolby Vision. Ships from London, UK warehouse.",
-    category: "electronics",
-    marketplace_type: "import",
-    price: 890000,
-    currency: "NGN",
-    unit: "unit",
-    min_order_quantity: 1,
-    weight_kg: 25,
-    origin_country: "GB",
-    rating: 4.8,
-    review_count: 567,
-    images: ["https://images.unsplash.com/photo-1593359677879-a4bb92f829e1?w=400&q=80"],
-    cargo_recommendation: "sea",
-    hs_code: { code: "8528.72", description: "Television sets, colour, OLED", ai_confidence: 0.97, ai_suggested: true, verified_by_admin: false, restricted_air_cargo: false },
-    tags: ["sony", "tv", "oled", "electronics"],
-  },
-  {
-    id: "i5",
-    name: "Mercedes-Benz GLE 450 2022",
-    description: "Imported from Germany. AMG Package, Panoramic roof, 4MATIC. 38,000km. Port: Hamburg to Apapa.",
-    category: "vehicles",
-    marketplace_type: "import",
-    price: 42000000,
-    currency: "NGN",
-    unit: "unit",
-    min_order_quantity: 1,
-    weight_kg: 2050,
-    origin_country: "DE",
-    rating: 4.9,
-    review_count: 89,
-    images: ["https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=400&q=80"],
-    cargo_recommendation: "sea",
-    hs_code: { code: "8703.24", description: "Motor cars, cylinder capacity 3000cc+", ai_confidence: 0.99, ai_suggested: true, verified_by_admin: true, restricted_air_cargo: true },
-    tags: ["mercedes", "gle", "germany", "suv"],
-  },
-  {
-    id: "i6",
-    name: "Caterpillar D6T Bulldozer",
-    description: "2020 model Cat D6T, 3,200 hours. Full service history. ROPS/FOPS cabin. CIF Lagos.",
-    category: "machinery",
-    marketplace_type: "import",
-    price: 185000000,
-    currency: "NGN",
-    unit: "unit",
-    min_order_quantity: 1,
-    weight_kg: 22000,
-    origin_country: "US",
-    rating: 4.6,
-    review_count: 14,
-    images: ["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80"],
-    cargo_recommendation: "sea",
-    hs_code: { code: "8429.11", description: "Angle dozers, crawler", ai_confidence: 0.98, ai_suggested: true, verified_by_admin: true, restricted_air_cargo: true },
-    tags: ["caterpillar", "bulldozer", "construction", "usa"],
-  },
-];
+const MOCK_IMPORT_PRODUCTS = IMPORT_PRODUCTS;
 
 const IMPORT_CATEGORIES = [
   { id: "all", label: "All" },
@@ -147,7 +34,7 @@ const IMPORT_CATEGORIES = [
   { id: "general_goods", label: "📦 General Goods" },
 ];
 
-function ImportProductCard({ product }: { product: Partial<Product> }) {
+function ImportProductCard({ product }: { product: DemoProduct }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const originFlags: Record<string, string> = {
@@ -165,7 +52,7 @@ function ImportProductCard({ product }: { product: Partial<Product> }) {
         <div className="relative h-52 overflow-hidden bg-muted">
           <div
             className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
-            style={{ backgroundImage: `url(${product.images?.[0] || ""})` }}
+            style={{ backgroundColor: "#f0fdf4" }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
 
@@ -173,9 +60,9 @@ function ImportProductCard({ product }: { product: Partial<Product> }) {
             <Badge variant="import" className="text-[10px] px-1.5 py-0.5">
               🌍 Import
             </Badge>
-            {product.origin_country && (
+            {product.origin && (
               <Badge className="text-[10px] px-1.5 py-0.5 bg-black/60">
-                {originFlags[product.origin_country] || "🌍"} {product.origin_country}
+                {originFlags[product.origin] || "🌍"} {product.origin}
               </Badge>
             )}
           </div>
@@ -206,15 +93,15 @@ function ImportProductCard({ product }: { product: Partial<Product> }) {
             <Star className="h-3.5 w-3.5 fill-ekda-gold-400 text-ekda-gold-400" />
             <span className="text-sm font-medium">{product.rating}</span>
             <span className="text-xs text-muted-foreground">
-              ({product.review_count?.toLocaleString()})
+              ({product.reviews?.toLocaleString()})
             </span>
           </div>
 
-          {product.hs_code?.code && (
+          {product.hsCode && (
             <div className="flex items-center gap-1 mb-3">
               <span className="text-xs text-muted-foreground">HS:</span>
               <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">
-                {product.hs_code.code}
+                {product.hsCode}
               </code>
             </div>
           )}

@@ -1,3 +1,6 @@
+import { validateLogin } from "@ekda/validators";
+import { DEMO_CREDENTIALS } from "@ekda/demo";
+import { mobileLogin } from "../../src/lib/DemoAuth";
 import { useState } from "react";
 import {
   View,
@@ -22,15 +25,25 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Missing Fields", "Please enter your email and password.");
+    // Quick field check before hitting validators
+    const quickErrs = validateLogin({ email, password });
+    if (Object.keys(quickErrs).length > 0) {
+      Alert.alert("Invalid Input", quickErrs.email ?? quickErrs.password ?? "Please check your input.");
       return;
     }
     setLoading(true);
-    // Simulate auth
-    await new Promise((r) => setTimeout(r, 1500));
+    // mobileLogin validates credentials AND saves session to AsyncStorage
+    const result = await mobileLogin(email, password);
     setLoading(false);
-    router.replace("/(tabs)");
+    if (result.success && result.user) {
+      Alert.alert(
+        "Welcome!",
+        `Signed in as ${result.user.name} (${result.user.role})\n\nSession saved — refresh won't log you out.`,
+        [{ text: "Continue", onPress: () => router.replace("/(tabs)") }]
+      );
+    } else {
+      Alert.alert("Login Failed", result.error ?? "Invalid credentials.");
+    }
   };
 
   return (

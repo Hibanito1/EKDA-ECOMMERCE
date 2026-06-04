@@ -10,64 +10,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
+import { formatCurrency } from "@ekda/shared";
+import { IMPORT_PRODUCTS } from "@ekda/demo";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40;
 
-const PRODUCTS = [
-  {
-    id: "i1",
-    name: "2021 Toyota Camry XSE V6",
-    vendor: "USA Auto Exports",
-    price: "₦18,500,000",
-    emoji: "🚗",
-    hs: "8703.23",
-    origin: "🇺🇸 USA",
-    cargo: "sea",
-    rating: 4.8,
-    category: "vehicles",
-    duty: "35%",
-  },
-  {
-    id: "i2",
-    name: "iPhone 15 Pro Max 256GB",
-    vendor: "Dubai Electronics Hub",
-    price: "₦1,150,000",
-    emoji: "📱",
-    hs: "8517.13",
-    origin: "🇦🇪 UAE",
-    cargo: "air",
-    rating: 4.9,
-    category: "electronics",
-    duty: "20%",
-  },
-  {
-    id: "i3",
-    name: "XCMG Crane 25-Ton",
-    vendor: "Sinotech Equipment",
-    price: "₦55,000,000",
-    emoji: "🏗️",
-    hs: "8426.41",
-    origin: "🇨🇳 China",
-    cargo: "sea",
-    rating: 4.7,
-    category: "machinery",
-    duty: "10%",
-  },
-  {
-    id: "i4",
-    name: "Mercedes-Benz GLE 450",
-    vendor: "Euro Auto GmbH",
-    price: "₦42,000,000",
-    emoji: "🏎️",
-    hs: "8703.24",
-    origin: "🇩🇪 Germany",
-    cargo: "sea",
-    rating: 4.9,
-    category: "vehicles",
-    duty: "35%",
-  },
-];
+// Products now from @ekda/demo
 
 function ImportCard({ item }: { item: typeof PRODUCTS[0] }) {
   return (
@@ -96,7 +45,7 @@ function ImportCard({ item }: { item: typeof PRODUCTS[0] }) {
         </View>
         <View style={styles.cardFooter}>
           <View>
-            <Text style={styles.cardPrice}>{item.price}</Text>
+            <Text style={styles.cardPrice}>{formatCurrency(item.price ?? 0, item.currency ?? "NGN")}</Text>
             <Text style={styles.cardPriceSub}>+ shipping & duties</Text>
           </View>
           <TouchableOpacity style={styles.viewButton}>
@@ -125,7 +74,7 @@ export default function ImportTab() {
       </LinearGradient>
 
       <FlatList
-        data={PRODUCTS}
+        data={IMPORT_PRODUCTS}
         renderItem={({ item }) => <ImportCard item={item} />}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}

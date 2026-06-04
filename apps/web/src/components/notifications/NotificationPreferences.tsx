@@ -3,142 +3,40 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bell, Mail, MessageSquare, Smartphone, Volume2, VolumeX,
+  Bell, Mail, MessageSquare, Smartphone, VolumeX,
   CheckCircle2, ShoppingCart, Truck, Shield, AlertCircle,
-  Star, Tag, Zap, Save
+  Tag, Zap, Save
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
+import {
+  NOTIFICATION_CHANNELS,
+  NOTIFICATION_CATEGORIES,
+  buildDefaultPreferences,
+  setAllInCategory,
+  type NotificationPreferences as NotificationPreferenceMap,
+} from "@ekda/ui";
 
-interface NotificationChannel {
-  id: string;
-  label: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
+// Map icon name strings (from @ekda/ui) → Lucide React components
+const CHANNEL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  smartphone: Smartphone, mail: Mail, "message-square": MessageSquare, bell: Bell,
+};
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  "shopping-cart": ShoppingCart, shield: Shield, "check-circle": CheckCircle2,
+  "alert-circle": AlertCircle, tag: Tag, zap: Zap,
+};
 
-interface NotificationCategory {
-  id: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  description: string;
-  events: NotificationEvent[];
-}
 
-interface NotificationEvent {
-  id: string;
-  label: string;
-  important?: boolean;
-}
 
-const CHANNELS: NotificationChannel[] = [
-  { id: "push", label: "Push Notification", description: "Browser and mobile app alerts", icon: Smartphone },
-  { id: "email", label: "Email", description: "Sent to your registered email", icon: Mail },
-  { id: "sms", label: "SMS", description: "Text messages to your phone", icon: MessageSquare },
-  { id: "in_app", label: "In-App", description: "Alerts inside the EKDA app", icon: Bell },
-];
-
-const NOTIFICATION_CATEGORIES: NotificationCategory[] = [
-  {
-    id: "orders",
-    label: "Orders & Tracking",
-    icon: ShoppingCart,
-    description: "Order confirmations, status updates, and delivery alerts",
-    events: [
-      { id: "order_placed", label: "Order confirmed", important: true },
-      { id: "payment_confirmed", label: "Payment received", important: true },
-      { id: "carrier_assigned", label: "Carrier assigned" },
-      { id: "order_picked_up", label: "Order picked up", important: true },
-      { id: "in_transit", label: "Shipment in transit" },
-      { id: "arrived_at_port", label: "Arrived at destination port", important: true },
-      { id: "order_delivered", label: "Order delivered", important: true },
-    ],
-  },
-  {
-    id: "payments",
-    label: "Payments & Escrow",
-    icon: Shield,
-    description: "Escrow releases, payouts, and payment alerts",
-    events: [
-      { id: "escrow_created", label: "Escrow created", important: true },
-      { id: "escrow_first_release", label: "Escrow 50% released", important: true },
-      { id: "escrow_fully_released", label: "Full payment released", important: true },
-      { id: "payout_processed", label: "Payout processed" },
-      { id: "payment_failed", label: "Payment failed", important: true },
-    ],
-  },
-  {
-    id: "kyc",
-    label: "Account & KYC",
-    icon: CheckCircle2,
-    description: "Verification status and account security alerts",
-    events: [
-      { id: "kyc_submitted", label: "KYC application submitted" },
-      { id: "kyc_approved", label: "KYC approved", important: true },
-      { id: "kyc_rejected", label: "KYC rejected", important: true },
-      { id: "more_info_required", label: "More information required", important: true },
-      { id: "account_security", label: "Security alerts", important: true },
-    ],
-  },
-  {
-    id: "disputes",
-    label: "Disputes & Support",
-    icon: AlertCircle,
-    description: "Dispute updates and support ticket notifications",
-    events: [
-      { id: "dispute_opened", label: "Dispute opened", important: true },
-      { id: "dispute_message", label: "New message in dispute" },
-      { id: "dispute_resolved", label: "Dispute resolved", important: true },
-      { id: "support_reply", label: "Support ticket reply", important: true },
-    ],
-  },
-  {
-    id: "marketing",
-    label: "Promotions & Offers",
-    icon: Tag,
-    description: "Deals, loyalty rewards, and platform news",
-    events: [
-      { id: "price_alert", label: "Price alert triggered" },
-      { id: "loyalty_points", label: "Loyalty points earned" },
-      { id: "promo_code", label: "New promo code available" },
-      { id: "platform_news", label: "Platform updates and news" },
-      { id: "weekly_digest", label: "Weekly digest email" },
-    ],
-  },
-  {
-    id: "ai",
-    label: "AI Recommendations",
-    icon: Zap,
-    description: "Smart product recommendations and insights",
-    events: [
-      { id: "ai_recommendation", label: "Personalized product picks" },
-      { id: "demand_forecast", label: "Stock replenishment reminders (vendors)" },
-      { id: "price_prediction", label: "Commodity price predictions" },
-    ],
-  },
-];
-
-type Preferences = Record<string, Record<string, boolean>>;
-
-function buildDefaultPreferences(): Preferences {
-  const prefs: Preferences = {};
-  NOTIFICATION_CATEGORIES.forEach((cat) => {
-    prefs[cat.id] = {};
-    cat.events.forEach((event) => {
-      prefs[cat.id]![event.id] = event.important !== false;
-    });
-  });
-  return prefs;
-}
 
 export function NotificationPreferences() {
   const [channelEnabled, setChannelEnabled] = useState<Record<string, boolean>>({
     push: true, email: true, sms: false, in_app: true,
   });
-  const [prefs, setPrefs] = useState<Preferences>(buildDefaultPreferences);
+  const [prefs, setPrefs] = useState<NotificationPreferenceMap>(buildDefaultPreferences);
   const [saving, setSaving] = useState(false);
   const [quietHours, setQuietHours] = useState({ enabled: false, from: "22:00", to: "07:00" });
 
@@ -152,11 +50,7 @@ export function NotificationPreferences() {
     }));
 
   const setAll = (catId: string, value: boolean) => {
-    const cat = NOTIFICATION_CATEGORIES.find((c) => c.id === catId);
-    if (!cat) return;
-    const updated: Record<string, boolean> = {};
-    cat.events.forEach((e) => { updated[e.id] = value; });
-    setPrefs((p) => ({ ...p, [catId]: updated }));
+    setPrefs((p) => setAllInCategory(p, catId, value));
   };
 
   const handleSave = async () => {
@@ -191,13 +85,14 @@ export function NotificationPreferences() {
           <CardTitle className="text-base">Notification Channels</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 p-4 pt-0">
-          {CHANNELS.map((channel) => {
+          {NOTIFICATION_CHANNELS.map((channel) => {
             const isEnabled = channelEnabled[channel.id];
+            const ChannelIcon = CHANNEL_ICONS[channel.iconName] ?? Bell;
             return (
               <div key={channel.id} className="flex items-center gap-4 p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors">
                 <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0",
                   isEnabled ? "bg-primary/10" : "bg-muted")}>
-                  <channel.icon className={cn("h-4 w-4", isEnabled ? "text-primary" : "text-muted-foreground")} />
+                  <ChannelIcon className={cn("h-4 w-4", isEnabled ? "text-primary" : "text-muted-foreground")} />
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-medium">{channel.label}</div>
@@ -281,7 +176,7 @@ export function NotificationPreferences() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
-                  <category.icon className="h-4 w-4 text-muted-foreground" />
+                  {(() => { const CI = CATEGORY_ICONS[category.iconName] ?? Bell; return <CI className="h-4 w-4 text-muted-foreground" />; })()}
                   <div>
                     <div className="font-medium text-sm">{category.label}</div>
                     <div className="text-xs text-muted-foreground">{category.description}</div>

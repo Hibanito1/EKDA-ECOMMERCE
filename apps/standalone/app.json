@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "EKDA Marketplace",
+    "slug": "ekda-standalone",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "backgroundColor": "#0a1628",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "io.ekda.standalone"
+    },
+    "android": {
+      "package": "io.ekda.standalone",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#0a1628"
+      },
+      "permissions": ["INTERNET"]
+    },
+    "plugins": ["expo-splash-screen"]
+  }
+}
