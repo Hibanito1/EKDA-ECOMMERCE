@@ -3,26 +3,14 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Zap, Info, ChevronDown, ChevronUp, Copy, CheckCircle2 } from "lucide-react";
-import { DEMO_USERS, DEMO_BANNER } from "@/lib/demo";
+import { DEMO_BANNER, DEMO_CREDENTIALS } from "@/lib/demo";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
-interface DemoCredential {
-  role: string;
-  email: string;
-  password: string;
-  description: string;
-  icon: string;
-}
+// DEMO_CREDENTIALS imported from @ekda/demo via @/lib/demo
+// No local rebuild — single source of truth
 
-const DEMO_CREDENTIALS: DemoCredential[] = [
-  { role: "Customer", email: DEMO_USERS.customer!.email, password: DEMO_USERS.customer!.password, description: "Shop, checkout, track orders", icon: "🛍️" },
-  { role: "Vendor", email: DEMO_USERS.vendor!.email, password: DEMO_USERS.vendor!.password, description: "List products, manage orders, AI HS codes", icon: "🏪" },
-  { role: "Carrier", email: DEMO_USERS.carrier!.email, password: DEMO_USERS.carrier!.password, description: "Bid on jobs, confirm pickups", icon: "🚢" },
-  { role: "Admin", email: DEMO_USERS.admin!.email, password: DEMO_USERS.admin!.password, description: "Full platform control, KYC queue", icon: "⚡" },
-];
-
-function DemoCredentialCard({ credential }: { credential: DemoCredential }) {
+function DemoCredentialCard({ credential }: { credential: typeof DEMO_CREDENTIALS[0] }) {
   const [copied, setCopied] = useState<"email" | "password" | null>(null);
 
   const copy = async (text: string, field: "email" | "password") => {
@@ -36,7 +24,7 @@ function DemoCredentialCard({ credential }: { credential: DemoCredential }) {
     <div className="p-3 bg-black/30 rounded-xl border border-white/10 space-y-2">
       <div className="flex items-center gap-2">
         <span className="text-base">{credential.icon}</span>
-        <span className="text-white font-semibold text-sm">{credential.role}</span>
+        <span className="text-white font-semibold text-sm capitalize">{credential.role}</span>
         <span className="text-white/50 text-xs ml-auto">{credential.description}</span>
       </div>
       <div className="grid grid-cols-2 gap-1.5">

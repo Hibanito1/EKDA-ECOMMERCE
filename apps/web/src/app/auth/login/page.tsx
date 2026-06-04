@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase/client";
 import { DEMO_USERS } from "@/lib/demo";
+import { validateLogin } from "@/lib/validation";
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
@@ -20,11 +21,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  /** Uses @ekda/validators → validateLogin via @/lib/validation re-export */
   const validate = () => {
-    const errs: Record<string, string> = {};
-    if (!form.email) errs.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = "Invalid email";
-    if (!form.password) errs.password = "Password is required";
+    const errs = validateLogin({ email: form.email, password: form.password });
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
