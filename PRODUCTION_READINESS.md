@@ -292,3 +292,167 @@ packages/config    → TypeScript configs
 ---
 
 *Prepared by EKDA AI Engineering · June 4, 2026*
+
+---
+
+## Pre-Launch Validation Results (June 4, 2026)
+
+All 21 automated tests passed. Summary:
+
+| Test | Result |
+|------|--------|
+| Homepage loads (HTTP 200) | ✅ |
+| Demo login — all 5 roles | ✅ Customer, Vendor, Carrier, Enterprise, Admin |
+| Wrong credentials rejected | ✅ |
+| Session persistence (TTL 24h, version check, expiry) | ✅ |
+| Role → redirect path mapping | ✅ customer=/customer, admin=/admin, etc. |
+| AI Chat GROQ fallback (no key) | ✅ live_ai: false, model: ekda-demo-classifier |
+| HS Code — crayfish (0306.17) | ✅ |
+| HS Code — vehicle air restriction | ✅ restricted_air_cargo: true |
+| Form validators (email, password, login) | ✅ 9/9 cases |
+| 20 routes return 200 | ✅ All routes healthy |
+| Health API | ✅ status: ok |
+| Escrow calculation 50/50 | ✅ ₦176,850 vendor share splits equally |
+| Dashboard role-matching | ✅ All 4 roles render correct page |
+| Blog articles (3) | ✅ All SSG |
+| Security headers (X-Frame, X-Content-Type, Referrer) | ✅ |
+| Rate limiting (20 req/min) | ✅ 429 triggered |
+| Product data in JS bundle | ✅ Found in main-app.js + 3 server chunks |
+| Turbo build clean | ✅ EXIT 0, 83 pages, 0 errors |
+
+---
+
+## Additional Pre-Launch Items (Discovered Jun 4)
+
+### Security
+
+#### CSP (Content Security Policy)
+Currently only applied in production env (`NODE_ENV=production`). Verify `middleware.ts` CSP string allows all Supabase, Paystack, Stripe domains before go-live.
+
+```typescript
+// In apps/web/src/middleware.ts, check these hostnames in connect-src:
+// https://*.supabase.co, https://api.paystack.co, https://api.stripe.com
+```
+
+#### Supabase Session Cookies
+When wiring real Supabase Auth, ensure the `@supabase/auth-helpers-nextjs` library sets `httpOnly` cookies via the server component client. Avoids XSS token theft.
+
+```typescript
+// apps/web/src/lib/supabase/server.ts
+// createServerComponentClient sets httpOnly cookies automatically ✅
+```
+
+### Infrastructure
+
+#### CI/CD Pipeline
+No GitHub Actions workflow exists. Add for automated testing on every PR:
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --legacy-peer-deps
+      - run: cd apps/web && npm run build
+      - run: cd apps/web && npm test
+```
+
+#### Database Backups
+Supabase Pro tier includes daily backups. For free tier, schedule a weekly manual dump:
+```bash
+supabase db dump -f backup_$(date +%Y%m%d).sql
+```
+
+#### EAS Project ID
+The `eas.json` references `"projectId": "ekda-marketplace-app"` — this needs to be replaced with the actual Expo project ID after running `eas build:configure`.
+
+### App Store Preparation
+
+#### iOS App Store
+- Requires Apple Developer account ($99/year)
+- TestFlight for beta distribution
+- Review time: 1–3 days
+- Run: `eas build --platform ios --profile production`
+
+#### Google Play Store  
+- Requires Google Play developer account ($25 one-time)
+- Internal testing track for testers
+- Review time: 1–7 days  
+- Run: `eas build --platform android --profile production` (generates AAB)
+
+### Performance
+
+#### Bundle Analysis
+Run Lighthouse before launch:
+```bash
+npx @lhci/cli autorun --collect.url=https://your-vercel-url.vercel.app
+```
+Target scores: Performance >80, Accessibility >90, SEO >95
+
+#### Image Optimization
+All product images currently use `images.unsplash.com`. Before launch:
+1. Upload real product photos to Supabase Storage
+2. Update `next.config.js` `remotePatterns` with Supabase bucket URL
+
+### Compliance
+
+#### GDPR/NDPR Live Data Flow
+The consent banner records to `consent_records` table (wired in `api/consent/route.ts`). Verify in production:
+- `POST /api/consent` actually writes to Supabase
+- `DELETE /api/consent` records withdrawal
+- Users can trigger data export from account settings
+
+#### Crypto Payment Compliance
+USDT/USDC crypto payments (`components/payments/PaymentInnovations.tsx`) require:
+- FINTRAC/CBN licensing check for Nigeria
+- KYC on crypto wallet addresses
+- Confirm with legal team before enabling in production
+
+### Monitoring
+
+#### Sentry (Error Tracking)
+```bash
+npm install @sentry/nextjs
+npx @sentry/wizard@latest -i nextjs
+```
+Set: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`
+
+#### PostHog (Analytics)
+```bash
+npm install posthog-js
+```
+Uncomment initialization in `apps/web/src/lib/analytics/index.ts`
+Set: `NEXT_PUBLIC_POSTHOG_KEY`
+
+---
+
+## Demo Testing Links
+
+Once deployed, share these with testers:
+
+```
+Web App:    https://your-deploy.vercel.app
+APK (v2):   https://github.com/Hibanito1/EKDA-ECOMMERCE/raw/cursor/health-check-fixes-1c4a/ekda-demo-v2.apk
+
+Demo accounts (all use Demo@12345):
+  Customer:   demo.customer@ekda.io  → /dashboard/customer
+  Vendor:     demo.vendor@ekda.io    → /dashboard/vendor
+  Carrier:    demo.carrier@ekda.io   → /dashboard/carrier
+  Admin:      demo.admin@ekda.io     → /dashboard/admin
+
+Key flows to test:
+  1. Login → refresh page → still logged in (persistent session)
+  2. Browse /marketplace/export → add to cart → checkout
+  3. AI Chat → ask about crayfish (shows Demo AI Mode badge)
+  4. /onboarding/kyc?role=vendor → complete 5 steps
+  5. /escrow-demo → watch animated escrow simulation
+  6. /dashboard/admin/kyc → approve/reject sample application
+  7. /dashboard/vendor/hs-codes → classify a product
+  8. /b2b → submit RFQ form
+```
