@@ -4,6 +4,13 @@ import { aiLogger } from "@/lib/logger";
 import { getAIChatResponse, EXPORT_PRODUCTS } from "@ekda/demo";
 import { EKDA_COMMISSION_RATE } from "@ekda/shared";
 
+/** True when a real Groq API key is configured */
+const GROQ_AVAILABLE = Boolean(
+  process.env.GROQ_API_KEY &&
+  process.env.GROQ_API_KEY !== "demo_placeholder_key" &&
+  process.env.GROQ_API_KEY.startsWith("gsk_")
+);
+
 const SYSTEM_PROMPT = `You are EKDA AI — an expert trade and shopping assistant for EKDA Marketplace,
 Africa's premier cross-border e-commerce platform. When live, powered by Groq Llama-3.
 In demo mode, contextual responses are from @ekda/demo.
@@ -38,17 +45,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
-    // In production, replace with live Groq call:
-    // const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    // const completion = await groq.chat.completions.create({
-    //   model: "llama-3.3-70b-versatile",
-    //   messages: [{ role: "system", content: SYSTEM_PROMPT }, ...history, { role: "user", content: message }],
-    //   max_tokens: 1024,
-    // });
-    // const aiText = completion.choices[0].message.content;
+    let chatResponseText: string;
+    let isLiveAI = false;
 
-    // Demo mode: use shared getAIChatResponse from @ekda/demo
+    if (GROQ_AVAILABLE) {
+      // Live Groq API — wire in when GROQ_API_KEY is set
+      // const { Groq } = await import("groq-sdk");
+      // const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+      // const completion = await groq.chat.completions.create({
+      //   model: "llama-3.3-70b-versatile",
+      //   messages: [{ role: "system", content: SYSTEM_PROMPT }, ...history, { role: "user", content: message }],
+      //   max_tokens: 1024,
+      //   temperature: 0.7,
+      // });
+      // chatResponseText = completion.choices[0]?.message?.content ?? "No response";
+      // isLiveAI = true;
+      // For now fall through to demo (remove when wiring live Groq)
+      chatResponseText = getAIChatResponse(message).text;
+    } else {
+      // Graceful fallback: demo responses from @ekda/demo
+      chatResponseText = getAIChatResponse(message).text;
+    }
+
+    // Use shared getAIChatResponse for suggestions regardless
     const chatResponse = getAIChatResponse(message);
+    chatResponse.text = chatResponseText;
 
     // Optionally enrich with product data from @ekda/demo
     const products =
@@ -68,6 +89,9 @@ export async function POST(req: NextRequest) {
       reply: chatResponse.text,
       suggestions: chatResponse.suggestions,
       products,
+      /** Consumers can show "Demo AI Mode" badge when this is false */
+      live_ai: isLiveAI,
+      model: isLiveAI ? "llama-3.3-70b-versatile" : "ekda-demo-classifier",
     };
 
     aiLogger.ai("chat_message_processed", "ekda-demo-classifier", Date.now() - startTime, {

@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import * as React from "react";
+import { useDemoAuth } from "@/lib/auth/DemoAuthContext";
+import { useRouter } from "next/navigation";
 
 type NavItem = {
   href: string;
@@ -73,7 +75,7 @@ const CUSTOMER_NAV: NavItem[] = [
   { href: "/dashboard/customer/wallet", label: "Wallet", icon: Wallet },
 ];
 
-function DashboardSidebar({ role, pathname }: { role: string; pathname: string }) {
+function DashboardSidebar({ role, pathname, onLogout }: { role: string; pathname: string; onLogout?: () => void }) {
   const navItems = {
     admin: ADMIN_NAV,
     vendor: VENDOR_NAV,
@@ -141,7 +143,10 @@ function DashboardSidebar({ role, pathname }: { role: string; pathname: string }
           <Settings className="h-4 w-4" />
           Settings
         </Link>
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/50 hover:bg-red-500/10 hover:text-red-400 transition-all">
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/50 hover:bg-red-500/10 hover:text-red-400 transition-all"
+        >
           <LogOut className="h-4 w-4" />
           Sign Out
         </button>
@@ -152,26 +157,55 @@ function DashboardSidebar({ role, pathname }: { role: string; pathname: string }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
+  const router = useRouter();
+  const { demoUser, logout, isLoading } = useDemoAuth();
 
-  // Derive role from current URL path for demo routing
-  const role = pathname.startsWith("/dashboard/admin")
+  // Role priority: 1) demo user's actual role, 2) URL path fallback
+  const roleFromPath = pathname.startsWith("/dashboard/admin")
     ? "admin"
     : pathname.startsWith("/dashboard/carrier")
     ? "carrier"
     : pathname.startsWith("/dashboard/customer")
     ? "customer"
-    : "vendor"; // default for /dashboard/vendor/*
+    : "vendor";
+
+  const role = demoUser?.role ?? roleFromPath;
+
+  // Redirect to correct dashboard when demo user's role doesn't match URL
+  React.useEffect(() => {
+    if (!isLoading && demoUser) {
+      const expectedPath = `/dashboard/${demoUser.role === "customer" || demoUser.role === "enterprise" ? "customer" : demoUser.role}`;
+      const isAdminPath = pathname.startsWith("/dashboard/admin") && demoUser.role === "admin";
+      const isCorrectPath = pathname.startsWith(expectedPath) || isAdminPath;
+      if (!isCorrectPath && pathname === "/dashboard") {
+        router.replace(expectedPath);
+      }
+    }
+  }, [demoUser, isLoading, pathname, router]);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/auth/login");
+  };
+
+  const userName = demoUser?.name ?? "EKDA User";
+  const userInitials = userName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <div className="flex min-h-screen bg-muted/30">
-      <DashboardSidebar role={role} pathname={pathname} />
+      <DashboardSidebar role={role} pathname={pathname} onLogout={handleLogout} />
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3 flex items-center justify-between">
           <div>
             <h2 className="font-semibold text-foreground">Dashboard</h2>
             <p className="text-xs text-muted-foreground">
-              Welcome back 👋
+              Welcome back, {demoUser?.name?.split(" ")[0] ?? "there"} 👋
+              {demoUser && (
+                <span className="ml-2 px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded text-[10px] font-semibold capitalize">
+                  🎭 {demoUser.role}
+                </span>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -180,7 +214,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
             </button>
             <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-ekda-green-600 to-ekda-green-800 flex items-center justify-center text-white text-sm font-bold">
-              KE
+              {userInitials}
             </div>
           </div>
         </header>

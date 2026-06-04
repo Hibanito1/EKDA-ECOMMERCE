@@ -28,6 +28,9 @@
       ],
       "@ekda/ui": [
         "../../packages/ui/src"
+      ],
+      "@/lib/*": [
+        "./src/lib/*"
       ]
     }
   },
