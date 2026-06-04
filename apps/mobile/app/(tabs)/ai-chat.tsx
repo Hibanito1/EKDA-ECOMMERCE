@@ -1,4 +1,17 @@
-import { CHAT_RESPONSES, HS_CODE_EXAMPLES, getAIChatResponse, classifyHSCode } from "@ekda/demo";
+/**
+ * apps/mobile/app/(tabs)/ai-chat.tsx
+ * Uses @ekda/demo for all chat responses and HS code examples.
+ * getAIChatResponse() replaces inline keyword matching.
+ * ChatResponse.text is a string, so we read .text directly.
+ */
+
+import {
+  CHAT_RESPONSES,
+  HS_CODE_EXAMPLES,
+  getAIChatResponse,
+  classifyHSCode,
+} from "@ekda/demo";
+import type { ChatResponse, HSCodeExample } from "@ekda/demo";
 import {
   View,
   Text,
@@ -14,54 +27,66 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 
+// Quick prompts use shared HS_CODE_EXAMPLES for variety
 const QUICK_PROMPTS = [
-  "Show me dried crayfish under ₦10K",
+  "Show me dried crayfish",
   "How to import a car to Nigeria?",
   "Calculate shipping to UK for 20kg",
-  "Halal certified products",
-  "What's my HS code?",
+  "How does escrow work?",
+  "What's the HS code for garri?",
 ];
-
-// BOT_RESPONSES now from @ekda/demo
 
 interface Message {
   id: string;
   text: string;
+  suggestions?: string[];
   isBot: boolean;
   timestamp: Date;
 }
 
-export default function AIChatScreen() {
-  const [messages, setMessages] = useState<Message[]>([
+function initialMessages(): Message[] {
+  const greeting = CHAT_RESPONSES.greeting!;
+  return [
     {
       id: "1",
-      text: CHAT_RESPONSES.default!,
+      text: greeting.text,
+      suggestions: greeting.suggestions,
       isBot: true,
       timestamp: new Date(),
     },
-  ]);
+  ];
+}
+
+export default function AIChatScreen() {
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
-    const userMsg: Message = { id: Date.now().toString(), text, isBot: false, timestamp: new Date() };
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      text,
+      isBot: false,
+      timestamp: new Date(),
+    };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 1000));
 
-    const lower = text.toLowerCase();
-    let reply = CHAT_RESPONSES.default!;
-    if (lower.includes("crayfish") || lower.includes("dried")) reply = CHAT_RESPONSES.crayfish!;
-    else if (lower.includes("car") || lower.includes("vehicle") || lower.includes("import")) reply = BOT_RESPONSES.car!;
-    else if (lower.includes("ship") || lower.includes("freight") || lower.includes("uk")) reply = BOT_RESPONSES.shipping!;
-    else if (lower.includes("halal") || lower.includes("eid")) reply = BOT_RESPONSES.halal!;
-    else if (lower.includes("hs") || lower.includes("code") || lower.includes("customs")) reply = BOT_RESPONSES.hs!;
-
-    const botMsg: Message = { id: (Date.now() + 1).toString(), text: reply, isBot: true, timestamp: new Date() };
+    // Use shared getAIChatResponse from @ekda/demo
+    const response: ChatResponse = getAIChatResponse(text);
+    const botMsg: Message = {
+      id: (Date.now() + 1).toString(),
+      text: response.text,
+      suggestions: response.suggestions,
+      isBot: true,
+      timestamp: new Date(),
+    };
     setMessages((prev) => [...prev, botMsg]);
     setLoading(false);
 
@@ -71,7 +96,10 @@ export default function AIChatScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
-      <LinearGradient colors={["#0a1628", "#0f2044"]} style={styles.header}>
+      <LinearGradient
+        colors={["#0a1628", "#0f2044"]}
+        style={styles.header}
+      >
         <View style={styles.headerLeft}>
           <View style={styles.botAvatar}>
             <Text style={styles.botAvatarText}>🤖</Text>
@@ -97,19 +125,56 @@ export default function AIChatScreen() {
         onContentSizeChange={() => scrollRef.current?.scrollToEnd()}
       >
         {messages.map((msg) => (
-          <View key={msg.id} style={[styles.messageRow, !msg.isBot && styles.userRow]}>
+          <View
+            key={msg.id}
+            style={[styles.messageRow, !msg.isBot && styles.userRow]}
+          >
             {msg.isBot && (
               <View style={styles.msgAvatar}>
                 <Text style={styles.msgAvatarText}>🤖</Text>
               </View>
             )}
-            <View style={[styles.bubble, msg.isBot ? styles.botBubble : styles.userBubble]}>
-              <Text style={[styles.bubbleText, !msg.isBot && styles.userBubbleText]}>
-                {msg.text}
-              </Text>
-              <Text style={[styles.timeText, !msg.isBot && styles.userTimeText]}>
-                {msg.timestamp.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-              </Text>
+            <View style={styles.bubbleWrapper}>
+              <View
+                style={[
+                  styles.bubble,
+                  msg.isBot ? styles.botBubble : styles.userBubble,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.bubbleText,
+                    !msg.isBot && styles.userBubbleText,
+                  ]}
+                >
+                  {msg.text}
+                </Text>
+                <Text
+                  style={[
+                    styles.timeText,
+                    !msg.isBot && styles.userTimeText,
+                  ]}
+                >
+                  {msg.timestamp.toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Text>
+              </View>
+              {/* Quick replies from shared suggestions */}
+              {msg.isBot && msg.suggestions && msg.suggestions.length > 0 && (
+                <View style={styles.suggestionsRow}>
+                  {msg.suggestions.map((s) => (
+                    <TouchableOpacity
+                      key={s}
+                      style={styles.suggestionChip}
+                      onPress={() => sendMessage(s)}
+                    >
+                      <Text style={styles.suggestionText}>{s}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
           </View>
         ))}
@@ -122,7 +187,10 @@ export default function AIChatScreen() {
             <View style={styles.botBubble}>
               <View style={styles.typingDots}>
                 {[0, 1, 2].map((i) => (
-                  <View key={i} style={[styles.dot, { opacity: 0.4 + i * 0.2 }]} />
+                  <View
+                    key={i}
+                    style={[styles.dot, { opacity: 0.4 + i * 0.2 }]}
+                  />
                 ))}
               </View>
             </View>
@@ -131,7 +199,12 @@ export default function AIChatScreen() {
       </ScrollView>
 
       {/* Quick Prompts */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickPrompts} contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.quickPrompts}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+      >
         {QUICK_PROMPTS.map((prompt) => (
           <TouchableOpacity
             key={prompt}
@@ -143,7 +216,9 @@ export default function AIChatScreen() {
         ))}
       </ScrollView>
 
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <View style={styles.inputBar}>
           <TextInput
             style={styles.input}
@@ -155,7 +230,10 @@ export default function AIChatScreen() {
             onSubmitEditing={() => sendMessage(input)}
           />
           <TouchableOpacity
-            style={[styles.sendButton, !input.trim() && styles.sendButtonDisabled]}
+            style={[
+              styles.sendButton,
+              !input.trim() && styles.sendButtonDisabled,
+            ]}
             onPress={() => sendMessage(input)}
             disabled={!input.trim() || loading}
           >
@@ -180,17 +258,21 @@ const styles = StyleSheet.create({
   aiBadge: { backgroundColor: "rgba(245,158,11,0.2)", borderRadius: 100, paddingHorizontal: 10, paddingVertical: 4 },
   aiBadgeText: { color: "#fbbf24", fontSize: 11, fontWeight: "700" },
   messages: { flex: 1 },
-  messageRow: { flexDirection: "row", gap: 8, maxWidth: "85%" },
+  messageRow: { flexDirection: "row", gap: 8, maxWidth: "90%" },
   userRow: { alignSelf: "flex-end", flexDirection: "row-reverse" },
   msgAvatar: { width: 28, height: 28, borderRadius: 10, backgroundColor: "#e0f2fe", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   msgAvatarText: { fontSize: 14 },
-  bubble: { flex: 1, borderRadius: 18, paddingHorizontal: 12, paddingVertical: 10 },
+  bubbleWrapper: { flex: 1 },
+  bubble: { borderRadius: 18, paddingHorizontal: 12, paddingVertical: 10 },
   botBubble: { backgroundColor: "#fff", borderWidth: 1, borderColor: "#e5e7eb", borderTopLeftRadius: 4 },
   userBubble: { backgroundColor: "#16a34a", borderTopRightRadius: 4 },
   bubbleText: { fontSize: 13, color: "#111827", lineHeight: 20 },
   userBubbleText: { color: "#fff" },
   timeText: { fontSize: 10, color: "#9ca3af", marginTop: 4 },
   userTimeText: { color: "rgba(255,255,255,0.6)", textAlign: "right" },
+  suggestionsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
+  suggestionChip: { backgroundColor: "#f0fdf4", borderWidth: 1, borderColor: "#bbf7d0", borderRadius: 100, paddingHorizontal: 10, paddingVertical: 5 },
+  suggestionText: { fontSize: 11, color: "#16a34a", fontWeight: "600" },
   typingDots: { flexDirection: "row", gap: 4, padding: 4 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#6b7280" },
   quickPrompts: { maxHeight: 48, borderTopWidth: 1, borderTopColor: "#f1f5f9", backgroundColor: "#fff" },

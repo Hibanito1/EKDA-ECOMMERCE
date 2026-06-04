@@ -1,6 +1,8 @@
 // ─── AI Chat Responses ────────────────────────────────────────────────────────
 // Platform-agnostic — no React/RN imports
 
+export type ChatResponseKey = "greeting" | "crayfish" | "car" | "escrow" | "shipping" | "default";
+
 export interface ChatResponse {
   text: string;
   suggestions: string[];

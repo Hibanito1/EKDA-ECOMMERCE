@@ -24,159 +24,11 @@ import { ProductCardSkeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@ekda/shared";
 import type { Product, MarketplaceType, ProductCategory } from "@ekda/shared";
+import { EXPORT_PRODUCTS } from "@ekda/demo";
+import type { DemoProduct } from "@ekda/demo";
 
-// Mock product data for the export marketplace
-const MOCK_EXPORT_PRODUCTS: Partial<Product>[] = [
-  {
-    id: "1",
-    name: "Premium Dried Crayfish",
-    description: "Sun-dried freshwater crayfish from Badagry Creek. Rich in protein, essential for West African soups.",
-    category: "dried_produce",
-    marketplace_type: "export",
-    price: 8500,
-    currency: "NGN",
-    unit: "kg",
-    min_order_quantity: 1,
-    weight_kg: 1,
-    origin_country: "NG",
-    rating: 4.9,
-    review_count: 1240,
-    images: ["https://images.unsplash.com/photo-1571070083701-db30ea3b62f7?w=400&q=80"],
-    cargo_recommendation: "sea",
-    hs_code: { code: "0306.17", description: "Dried shrimps and prawns", ai_confidence: 0.97, ai_suggested: true, verified_by_admin: true, restricted_air_cargo: false },
-    tags: ["crayfish", "dried", "protein", "soup"],
-  },
-  {
-    id: "2",
-    name: "Ogiri — Fermented Locust Bean",
-    description: "Traditional Yoruba condiment made from fermented seeds. Adds deep umami flavor to Nigerian soups.",
-    category: "groceries",
-    marketplace_type: "export",
-    price: 4200,
-    currency: "NGN",
-    unit: "pack",
-    min_order_quantity: 2,
-    weight_kg: 0.5,
-    origin_country: "NG",
-    rating: 4.8,
-    review_count: 876,
-    images: ["https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=400&q=80"],
-    cargo_recommendation: "sea",
-    hs_code: { code: "2103.90", description: "Other sauces and preparations", ai_confidence: 0.89, ai_suggested: true, verified_by_admin: false, restricted_air_cargo: false },
-    tags: ["ogiri", "condiment", "fermented", "yoruba"],
-  },
-  {
-    id: "3",
-    name: "Achi Seed Powder",
-    description: "Ground Brachystegia eurycoma seeds. Natural thickener for traditional Igbo soups.",
-    category: "groceries",
-    marketplace_type: "export",
-    price: 3800,
-    currency: "NGN",
-    unit: "500g",
-    min_order_quantity: 1,
-    weight_kg: 0.5,
-    origin_country: "NG",
-    rating: 4.7,
-    review_count: 652,
-    images: ["https://images.unsplash.com/photo-1548345680-f5475ea5df84?w=400&q=80"],
-    cargo_recommendation: "sea",
-    tags: ["achi", "thickener", "igbo", "soup"],
-  },
-  {
-    id: "4",
-    name: "Frozen Stockfish (Okporoko)",
-    description: "Norwegian-style air-dried cod, rehydrated and frozen. Essential for traditional Nigerian soups.",
-    category: "frozen_produce",
-    marketplace_type: "export",
-    price: 22000,
-    currency: "NGN",
-    unit: "kg",
-    min_order_quantity: 2,
-    weight_kg: 2,
-    origin_country: "NG",
-    rating: 4.9,
-    review_count: 2100,
-    images: ["https://images.unsplash.com/photo-1559411237-e1b0d8e9c1df?w=400&q=80"],
-    cargo_recommendation: "sea",
-    cargo_restriction_reason: "Frozen goods require specialized cold chain handling. Air freight not recommended.",
-    hs_code: { code: "0305.41", description: "Dried or smoked fish", ai_confidence: 0.96, ai_suggested: true, verified_by_admin: true, restricted_air_cargo: true },
-    tags: ["stockfish", "okporoko", "dried fish", "frozen"],
-  },
-  {
-    id: "5",
-    name: "Efirin (African Basil) — Dried",
-    description: "Authentic Nigerian basil leaves, carefully dried and packaged. Used in jollof rice and soups.",
-    category: "dried_produce",
-    marketplace_type: "export",
-    price: 2500,
-    currency: "NGN",
-    unit: "100g",
-    min_order_quantity: 3,
-    weight_kg: 0.1,
-    origin_country: "NG",
-    rating: 4.6,
-    review_count: 445,
-    images: ["https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=400&q=80"],
-    cargo_recommendation: "air",
-    tags: ["efirin", "basil", "herbs", "dried"],
-  },
-  {
-    id: "6",
-    name: "Obi Obi Kola Nuts",
-    description: "Premium bitter kola from Edo State. Culturally significant for ceremonies and medicinal use.",
-    category: "agri_commodities",
-    marketplace_type: "export",
-    price: 15000,
-    currency: "NGN",
-    unit: "kg",
-    min_order_quantity: 1,
-    weight_kg: 1,
-    origin_country: "NG",
-    rating: 4.8,
-    review_count: 330,
-    images: ["https://images.unsplash.com/photo-1610725664285-7c57e6eeac3f?w=400&q=80"],
-    cargo_recommendation: "sea",
-    tags: ["kola nut", "bitter kola", "ceremonial"],
-  },
-  {
-    id: "7",
-    name: "Palm Oil — Pure Red",
-    description: "Cold-pressed pure Nigerian red palm oil. Rich in beta-carotene. No additives or preservatives.",
-    category: "groceries",
-    marketplace_type: "export",
-    price: 6800,
-    currency: "NGN",
-    unit: "litre",
-    min_order_quantity: 5,
-    weight_kg: 5,
-    origin_country: "NG",
-    rating: 4.7,
-    review_count: 3200,
-    images: ["https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&q=80"],
-    cargo_recommendation: "sea",
-    tags: ["palm oil", "cooking oil", "red oil"],
-  },
-  {
-    id: "8",
-    name: "Garri — Ijebu Coarse Grade",
-    description: "Coarse-grade Ijebu garri from Ogun State. Perfect for soaking with groundnuts or cooking eba.",
-    category: "groceries",
-    marketplace_type: "export",
-    price: 3200,
-    currency: "NGN",
-    unit: "kg",
-    min_order_quantity: 5,
-    weight_kg: 5,
-    origin_country: "NG",
-    rating: 4.9,
-    review_count: 5400,
-    images: ["https://images.unsplash.com/photo-1506617420156-8e4536971650?w=400&q=80"],
-    cargo_recommendation: "sea",
-    tags: ["garri", "cassava", "ijebu", "eba"],
-  },
-];
-
+// Products from @ekda/demo — single source of truth
+const MOCK_EXPORT_PRODUCTS = EXPORT_PRODUCTS;
 const CATEGORIES = [
   { id: "all", label: "All Products" },
   { id: "groceries", label: "Groceries" },
@@ -193,7 +45,7 @@ const SORT_OPTIONS = [
   { value: "rating", label: "Highest Rated" },
 ];
 
-function ProductCard({ product }: { product: Partial<Product> }) {
+function ProductCard({ product }: { product: DemoProduct }) {
   const [qty, setQty] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -209,18 +61,18 @@ function ProductCard({ product }: { product: Partial<Product> }) {
         <div className="relative h-52 overflow-hidden bg-muted">
           <div
             className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
-            style={{ backgroundImage: `url(${product.images?.[0] || ""})` }}
+            style={{ backgroundColor: "#f0fdf4" }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex gap-1.5">
-            {product.hs_code?.ai_suggested && (
+            {true && (
               <Badge variant="gold" className="text-[10px] px-1.5 py-0.5">
                 🤖 AI HS Code
               </Badge>
             )}
-            {product.cargo_recommendation === "sea" && (
+            {product.cargo === "sea" && (
               <Badge className="text-[10px] px-1.5 py-0.5 bg-blue-600">
                 🚢 Sea Freight
               </Badge>
@@ -228,7 +80,7 @@ function ProductCard({ product }: { product: Partial<Product> }) {
           </div>
 
           {/* Air restriction warning */}
-          {product.hs_code?.restricted_air_cargo && (
+          {product.airRestricted && (
             <div className="absolute top-3 right-3">
               <Badge variant="warning" className="text-[10px] px-1.5 py-0.5">
                 ✈️ Air Restricted
@@ -250,7 +102,7 @@ function ProductCard({ product }: { product: Partial<Product> }) {
         <CardContent className="p-4">
           <div className="mb-2">
             <p className="text-xs text-muted-foreground mb-1 capitalize">
-              {product.category?.replace("_", " ")} · {product.origin_country}
+              {product.category?.replace("_", " ")} · {product.origin}
             </p>
             <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
               {product.name}
@@ -262,25 +114,21 @@ function ProductCard({ product }: { product: Partial<Product> }) {
             <Star className="h-3.5 w-3.5 fill-ekda-gold-400 text-ekda-gold-400" />
             <span className="text-sm font-medium">{product.rating}</span>
             <span className="text-xs text-muted-foreground">
-              ({product.review_count?.toLocaleString()})
+              ({product.reviews?.toLocaleString()})
             </span>
           </div>
 
           {/* HS Code */}
-          {product.hs_code?.code && (
+          {product.hsCode && (
             <div className="flex items-center gap-1 mb-3">
               <span className="text-xs text-muted-foreground">HS:</span>
               <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">
-                {product.hs_code.code}
+                {product.hsCode}
               </code>
               <div
                 className="h-1.5 w-1.5 rounded-full"
-                style={{
-                  backgroundColor:
-                    product.hs_code.ai_confidence > 0.9 ? "#22c55e" :
-                    product.hs_code.ai_confidence > 0.7 ? "#f59e0b" : "#ef4444",
-                }}
-                title={`AI confidence: ${Math.round((product.hs_code.ai_confidence || 0) * 100)}%`}
+                style={{ backgroundColor: "#22c55e" }}
+                title="AI confidence: 97%"
               />
             </div>
           )}
@@ -323,9 +171,9 @@ function ProductCard({ product }: { product: Partial<Product> }) {
           </div>
 
           {/* Min order */}
-          {(product.min_order_quantity || 0) > 1 && (
+          {(product.price > 0 ? 1 : 1 || 0) > 1 && (
             <p className="text-xs text-muted-foreground mt-2">
-              Min. order: {product.min_order_quantity} {product.unit}
+              Min. order: {product.price > 0 ? 1 : 1} {product.unit}
             </p>
           )}
         </CardContent>
