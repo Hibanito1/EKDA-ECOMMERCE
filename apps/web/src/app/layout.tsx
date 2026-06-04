@@ -6,6 +6,7 @@ import "./globals.css";
 import { Providers } from "@/components/layout/Providers";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://ekda.io"),
   title: {
     default: "EKDA — Africa's Premier Cross-Border Marketplace",
     template: "%s | EKDA",

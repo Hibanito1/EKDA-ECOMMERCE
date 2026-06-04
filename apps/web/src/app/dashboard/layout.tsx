@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
@@ -17,8 +19,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-export const metadata: Metadata = { title: "Dashboard" };
+import * as React from "react";
 
 type NavItem = {
   href: string;
@@ -149,21 +150,28 @@ function DashboardSidebar({ role, pathname }: { role: string; pathname: string }
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function DashboardLayout({ children }: any) {
-  // In production, get role from session
-  const role = "vendor"; // placeholder — derive from server session
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname() ?? "";
+
+  // Derive role from current URL path for demo routing
+  const role = pathname.startsWith("/dashboard/admin")
+    ? "admin"
+    : pathname.startsWith("/dashboard/carrier")
+    ? "carrier"
+    : pathname.startsWith("/dashboard/customer")
+    ? "customer"
+    : "vendor"; // default for /dashboard/vendor/*
 
   return (
     <div className="flex min-h-screen bg-muted/30">
-      <DashboardSidebar role={role} pathname="/dashboard/vendor" />
+      <DashboardSidebar role={role} pathname={pathname} />
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3 flex items-center justify-between">
           <div>
             <h2 className="font-semibold text-foreground">Dashboard</h2>
             <p className="text-xs text-muted-foreground">
-              Welcome back, Kingsley 👋
+              Welcome back 👋
             </p>
           </div>
           <div className="flex items-center gap-2">
