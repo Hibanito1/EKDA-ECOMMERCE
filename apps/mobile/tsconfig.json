@@ -3,17 +3,41 @@
   "compilerOptions": {
     "strict": true,
     "target": "esnext",
-    "lib": ["esnext"],
+    "lib": [
+      "esnext"
+    ],
     "jsx": "react-native",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@ekda/shared": ["../../packages/shared/src"],
-      "@ekda/database": ["../../packages/database/src"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@ekda/shared": [
+        "../../packages/shared/src"
+      ],
+      "@ekda/database": [
+        "../../packages/database/src"
+      ],
+      "@ekda/demo": [
+        "../../packages/demo/src"
+      ],
+      "@ekda/validators": [
+        "../../packages/validators/src"
+      ],
+      "@ekda/ui": [
+        "../../packages/ui/src"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

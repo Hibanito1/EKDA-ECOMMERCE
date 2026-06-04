@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDemoUserByEmail, DEMO_MODE, getDemoRedirectPath, type DemoUserRole } from "@/lib/demo";
+import { getDemoUserByEmail, DEMO_MODE, getDemoRedirectPath } from "@/lib/demo";
+import type { UserRole } from "@ekda/shared";
 
 /**
  * Demo login endpoint — bypasses Supabase Auth for testing
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Password should be: Demo@12345" }, { status: 401 });
     }
 
-    const redirectPath = getDemoRedirectPath(demoUser.role as DemoUserRole);
+    const redirectPath = getDemoRedirectPath(demoUser.role as UserRole);
 
     return NextResponse.json({
       success: true,

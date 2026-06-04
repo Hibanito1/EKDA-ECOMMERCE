@@ -1,3 +1,4 @@
+import { CHAT_RESPONSES, HS_CODE_EXAMPLES, getAIChatResponse, classifyHSCode } from "@ekda/demo";
 import {
   View,
   Text,
@@ -21,14 +22,7 @@ const QUICK_PROMPTS = [
   "What's my HS code?",
 ];
 
-const BOT_RESPONSES: Record<string, string> = {
-  default: "Hi! 👋 I'm EKDA AI. I can help you find products, calculate shipping costs, explain HS codes, and navigate import/export regulations. What can I help you with today?",
-  crayfish: "🦐 Found great dried crayfish options!\n\n• Premium Badagry Creek: ₦8,500/kg\n• Sun-dried Variety: ₦7,200/kg\n• Bulk (10kg+): ₦7,800/kg avg\n\nSea freight to UK: ₦35,000 for 10kg (28 days)\nAir freight: ₦85,000 for 10kg (5 days)\n\nWould you like to add any to your cart? 🛒",
-  car: "🚗 Importing a car to Nigeria:\n\n1. Find your car on our Import marketplace\n2. AI assigns HS Code (8703.xx)\n3. Pay via escrow (100% protected)\n4. We arrange sea freight (20-30 days)\n5. Clear customs at Apapa/Tin Can\n6. Delivery to your address\n\nImport duty: 35% + 7% port levy\nEstimated clearing: ₦80,000-120,000\n\nWant me to calculate full landed cost? 💰",
-  shipping: "🚢 Shipping estimate for 20kg to UK:\n\n**Sea Freight (recommended)**\n• Transit: 28 days\n• Cost: ~₦47,000 (Maersk)\n• Cost: ~₦38,000 (MSC Economy)\n\n**Air Freight**\n• Transit: 5 days\n• Cost: ~₦98,000 (DHL Express)\n\nFor 20kg, sea freight saves ₦51,000+\n\nWant to compare more carriers? 🔍",
-  halal: "☪️ Halal Certified Products on EKDA:\n\n• Smoked Fish (NAFDAC Halal cert)\n• Chicken (Certified Abattoir)\n• Dates from Kano\n• Pure Honey\n• Shea Butter\n\nAll halal products are verified by our compliance team. I can also show you our Eid gift bundles if you're shopping for the celebration! 🎁",
-  hs: "📋 HS Code Help:\n\nOur AI classifier can identify your HS code from a product description. Here are some common ones:\n\n• Dried Crayfish: 0306.17\n• Palm Oil: 1511.10\n• Garri: 1903.00\n• Vehicles (<3000cc): 8703.23\n• Smartphones: 8517.13\n\nJust describe your product and I'll classify it! 🤖",
-};
+// BOT_RESPONSES now from @ekda/demo
 
 interface Message {
   id: string;
@@ -41,7 +35,7 @@ export default function AIChatScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: BOT_RESPONSES.default!,
+      text: CHAT_RESPONSES.default!,
       isBot: true,
       timestamp: new Date(),
     },
@@ -60,8 +54,8 @@ export default function AIChatScreen() {
     await new Promise((r) => setTimeout(r, 1200));
 
     const lower = text.toLowerCase();
-    let reply = BOT_RESPONSES.default!;
-    if (lower.includes("crayfish") || lower.includes("dried")) reply = BOT_RESPONSES.crayfish!;
+    let reply = CHAT_RESPONSES.default!;
+    if (lower.includes("crayfish") || lower.includes("dried")) reply = CHAT_RESPONSES.crayfish!;
     else if (lower.includes("car") || lower.includes("vehicle") || lower.includes("import")) reply = BOT_RESPONSES.car!;
     else if (lower.includes("ship") || lower.includes("freight") || lower.includes("uk")) reply = BOT_RESPONSES.shipping!;
     else if (lower.includes("halal") || lower.includes("eid")) reply = BOT_RESPONSES.halal!;

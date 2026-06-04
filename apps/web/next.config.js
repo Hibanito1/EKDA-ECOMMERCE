@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@ekda/shared", "@ekda/database"],
+  transpilePackages: ["@ekda/shared", "@ekda/database", "@ekda/demo", "@ekda/validators", "@ekda/ui"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },

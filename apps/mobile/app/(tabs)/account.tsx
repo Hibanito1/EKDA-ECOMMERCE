@@ -1,3 +1,5 @@
+import { MOCK_ORDERS, MOCK_NOTIFICATIONS, LOYALTY_TIERS, getLoyaltyTier } from "@ekda/demo";
+import { formatCurrency } from "@ekda/shared";
 import {
   View,
   Text,

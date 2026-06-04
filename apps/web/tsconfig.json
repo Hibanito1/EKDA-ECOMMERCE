@@ -2,7 +2,11 @@
   "extends": "../../packages/config/tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -14,13 +18,39 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@ekda/shared": ["../../packages/shared/src"],
-      "@ekda/database": ["../../packages/database/src"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@ekda/shared": [
+        "../../packages/shared/src"
+      ],
+      "@ekda/database": [
+        "../../packages/database/src"
+      ],
+      "@ekda/demo": [
+        "../../packages/demo/src"
+      ],
+      "@ekda/validators": [
+        "../../packages/validators/src"
+      ],
+      "@ekda/ui": [
+        "../../packages/ui/src"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

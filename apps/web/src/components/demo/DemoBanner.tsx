@@ -16,10 +16,10 @@ interface DemoCredential {
 }
 
 const DEMO_CREDENTIALS: DemoCredential[] = [
-  { role: "Customer", email: DEMO_USERS.customer.email, password: DEMO_USERS.customer.password, description: "Shop, checkout, track orders", icon: "🛍️" },
-  { role: "Vendor", email: DEMO_USERS.vendor.email, password: DEMO_USERS.vendor.password, description: "List products, manage orders, AI HS codes", icon: "🏪" },
-  { role: "Carrier", email: DEMO_USERS.carrier.email, password: DEMO_USERS.carrier.password, description: "Bid on jobs, confirm pickups", icon: "🚢" },
-  { role: "Admin", email: DEMO_USERS.admin.email, password: DEMO_USERS.admin.password, description: "Full platform control, KYC queue", icon: "⚡" },
+  { role: "Customer", email: DEMO_USERS.customer!.email, password: DEMO_USERS.customer!.password, description: "Shop, checkout, track orders", icon: "🛍️" },
+  { role: "Vendor", email: DEMO_USERS.vendor!.email, password: DEMO_USERS.vendor!.password, description: "List products, manage orders, AI HS codes", icon: "🏪" },
+  { role: "Carrier", email: DEMO_USERS.carrier!.email, password: DEMO_USERS.carrier!.password, description: "Bid on jobs, confirm pickups", icon: "🚢" },
+  { role: "Admin", email: DEMO_USERS.admin!.email, password: DEMO_USERS.admin!.password, description: "Full platform control, KYC queue", icon: "⚡" },
 ];
 
 function DemoCredentialCard({ credential }: { credential: DemoCredential }) {

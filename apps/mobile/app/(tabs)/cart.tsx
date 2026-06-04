@@ -1,3 +1,5 @@
+import { formatCurrency, calculateOrderBreakdown, EKDA_COMMISSION_RATE } from "@ekda/shared";
+import { EXPORT_PRODUCTS, MOCK_ORDERS } from "@ekda/demo";
 import {
   View,
   Text,
@@ -17,10 +19,10 @@ const MOCK_CART = [
 export default function CartTab() {
   const subtotal = MOCK_CART.reduce((s, i) => s + i.price * i.qty, 0);
   const shipping = 35000;
-  const commission = subtotal * 0.1;
+  const commission = subtotal * EKDA_COMMISSION_RATE; // from @ekda/shared
   const total = subtotal + shipping + commission;
 
-  const fmt = (n: number) => `₦${n.toLocaleString()}`;
+  // Uses formatCurrency from @ekda/shared
 
   return (
     <SafeAreaView style={styles.container}>
@@ -51,7 +53,7 @@ export default function CartTab() {
                 <Text style={styles.qtyUnit}>{item.unit}</Text>
               </View>
             </View>
-            <Text style={styles.cartItemPrice}>{fmt(item.price * item.qty)}</Text>
+            <Text style={styles.cartItemPrice}>{formatCurrency(item.price * item.qty, "NGN")}</Text>
           </View>
         ))}
 
@@ -59,19 +61,19 @@ export default function CartTab() {
         <View style={styles.summary}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>{fmt(subtotal)}</Text>
+            <Text style={styles.summaryValue}>{formatCurrency(subtotal, "NGN")}</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Shipping (Sea)</Text>
-            <Text style={styles.summaryValue}>{fmt(shipping)}</Text>
+            <Text style={styles.summaryValue}>{formatCurrency(shipping, "NGN")}</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>EKDA Commission (10%)</Text>
-            <Text style={styles.summaryValue}>{fmt(commission)}</Text>
+            <Text style={styles.summaryValue}>{formatCurrency(commission, "NGN")}</Text>
           </View>
           <View style={[styles.summaryRow, styles.summaryTotal]}>
             <Text style={styles.summaryTotalLabel}>Total</Text>
-            <Text style={styles.summaryTotalValue}>{fmt(total)}</Text>
+            <Text style={styles.summaryTotalValue}>{formatCurrency(total, "NGN")}</Text>
           </View>
         </View>
 
@@ -84,7 +86,7 @@ export default function CartTab() {
 
       <View style={styles.checkoutBar}>
         <View>
-          <Text style={styles.checkoutTotal}>{fmt(total)}</Text>
+          <Text style={styles.checkoutTotal}>{formatCurrency(total, "NGN")}</Text>
           <Text style={styles.checkoutSub}>Total amount</Text>
         </View>
         <TouchableOpacity style={styles.checkoutButton}>

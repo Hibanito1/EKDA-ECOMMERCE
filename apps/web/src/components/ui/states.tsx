@@ -1,16 +1,42 @@
+/**
+ * apps/web/src/components/ui/states.tsx
+ *
+ * Web-specific UI state components (Tailwind + Framer Motion).
+ * Text copy and empty-state configs come from @ekda/ui so they
+ * stay in sync with the mobile app.
+ */
+
 import * as React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+// Import shared copy from @ekda/ui
+export { EMPTY_STATES } from "@ekda/ui";
+export type { EmptyStateCopy, EmptyStateKey } from "@ekda/ui";
+export { toastConfig as toastStyles } from "@ekda/ui";
+
 // ─── Loading Spinner ──────────────────────────────────────────────────────────
 
-export function Spinner({ className, size = "md" }: { className?: string; size?: "sm" | "md" | "lg" }) {
-  const sizes = { sm: "h-4 w-4 border-2", md: "h-8 w-8 border-2", lg: "h-12 w-12 border-3" };
+export function Spinner({
+  className,
+  size = "md",
+}: {
+  className?: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  const sizes = {
+    sm: "h-4 w-4 border-2",
+    md: "h-8 w-8 border-2",
+    lg: "h-12 w-12 border-[3px]",
+  };
   return (
-    <div className={cn(
-      "rounded-full border-primary border-t-transparent animate-spin",
-      sizes[size], className
-    )} />
+    <div
+      className={cn(
+        "rounded-full border-primary border-t-transparent animate-spin",
+        sizes[size],
+        className
+      )}
+    />
   );
 }
 
@@ -78,18 +104,32 @@ export function DashboardCardSkeleton() {
   );
 }
 
-export function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number }) {
+export function TableSkeleton({
+  rows = 5,
+  cols = 5,
+}: {
+  rows?: number;
+  cols?: number;
+}) {
   return (
     <div className="rounded-2xl border overflow-hidden">
       <div className="border-b bg-muted/30 px-4 py-3 flex gap-4">
         {Array.from({ length: cols }).map((_, i) => (
-          <div key={i} className="h-3 bg-muted animate-pulse rounded-full" style={{ width: `${60 + Math.random() * 60}px` }} />
+          <div
+            key={i}
+            className="h-3 bg-muted animate-pulse rounded-full"
+            style={{ width: `${60 + (i * 17) % 60}px` }}
+          />
         ))}
       </div>
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className="border-b last:border-0 px-4 py-3.5 flex gap-4">
           {Array.from({ length: cols }).map((_, j) => (
-            <div key={j} className="h-3 bg-muted animate-pulse rounded-full" style={{ width: `${50 + Math.random() * 80}px` }} />
+            <div
+              key={j}
+              className="h-3 bg-muted animate-pulse rounded-full"
+              style={{ width: `${50 + (j * 23) % 80}px` }}
+            />
           ))}
         </div>
       ))}
@@ -97,7 +137,7 @@ export function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: nu
   );
 }
 
-// ─── Empty States ─────────────────────────────────────────────────────────────
+// ─── Empty State (Web — Framer Motion) ────────────────────────────────────────
 
 interface EmptyStateProps {
   emoji?: string;
@@ -107,60 +147,33 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export function EmptyState({ emoji = "📭", title, description, action, className }: EmptyStateProps) {
+export function EmptyState({
+  emoji = "📭",
+  title,
+  description,
+  action,
+  className,
+}: EmptyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn("flex flex-col items-center justify-center py-16 px-4 text-center", className)}
+      className={cn(
+        "flex flex-col items-center justify-center py-16 px-4 text-center",
+        className
+      )}
     >
       <div className="text-5xl mb-4">{emoji}</div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      {description && <p className="text-muted-foreground text-sm max-w-xs mb-6">{description}</p>}
+      {description && (
+        <p className="text-muted-foreground text-sm max-w-xs mb-6">{description}</p>
+      )}
       {action && <div>{action}</div>}
     </motion.div>
   );
 }
 
-export const EMPTY_STATES = {
-  cart: {
-    emoji: "🛒",
-    title: "Your cart is empty",
-    description: "Discover authentic African products or import quality goods from around the world.",
-  },
-  orders: {
-    emoji: "📦",
-    title: "No orders yet",
-    description: "Your order history will appear here once you place your first order.",
-  },
-  products: {
-    emoji: "🔍",
-    title: "No products found",
-    description: "Try adjusting your search or filter criteria to find what you're looking for.",
-  },
-  disputes: {
-    emoji: "✅",
-    title: "No open disputes",
-    description: "All disputes have been resolved. Great job keeping your transactions smooth!",
-  },
-  notifications: {
-    emoji: "🔔",
-    title: "All caught up!",
-    description: "You have no new notifications. We'll let you know when something important happens.",
-  },
-  vendors: {
-    emoji: "🏪",
-    title: "No vendors found",
-    description: "No vendors match your current search criteria.",
-  },
-  wishlist: {
-    emoji: "❤️",
-    title: "Your wishlist is empty",
-    description: "Save products you love to your wishlist for easy access later.",
-  },
-} as const;
-
-// ─── Error States ─────────────────────────────────────────────────────────────
+// ─── Error State ──────────────────────────────────────────────────────────────
 
 interface ErrorStateProps {
   title?: string;
@@ -182,7 +195,11 @@ export function ErrorState({
       className="flex flex-col items-center justify-center py-16 px-4 text-center"
     >
       <div className="text-5xl mb-4">⚠️</div>
-      {code && <div className="text-muted-foreground text-sm font-mono mb-2">Error {code}</div>}
+      {code && (
+        <div className="text-muted-foreground text-sm font-mono mb-2">
+          Error {code}
+        </div>
+      )}
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
       <p className="text-muted-foreground text-sm max-w-xs mb-6">{description}</p>
       {onRetry && (
@@ -199,7 +216,15 @@ export function ErrorState({
 
 // ─── Success State ────────────────────────────────────────────────────────────
 
-export function SuccessState({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) {
+export function SuccessState({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -215,8 +240,12 @@ export function SuccessState({ title, description, action }: { title: string; de
       >
         <span className="text-4xl">✅</span>
       </motion.div>
-      <h3 className="text-xl font-bold mb-2 text-ekda-green-700 dark:text-ekda-green-400">{title}</h3>
-      {description && <p className="text-muted-foreground text-sm max-w-xs mb-6">{description}</p>}
+      <h3 className="text-xl font-bold mb-2 text-ekda-green-700 dark:text-ekda-green-400">
+        {title}
+      </h3>
+      {description && (
+        <p className="text-muted-foreground text-sm max-w-xs mb-6">{description}</p>
+      )}
       {action && <div>{action}</div>}
     </motion.div>
   );
@@ -235,12 +264,3 @@ export function OfflineBanner() {
     </motion.div>
   );
 }
-
-// ─── Toast Variants ───────────────────────────────────────────────────────────
-
-export const toastStyles = {
-  success: { style: { background: "#14532d", color: "#fff", border: "1px solid rgba(34,197,94,0.3)", borderRadius: "14px" } },
-  error: { style: { background: "#450a0a", color: "#fff", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "14px" } },
-  info: { style: { background: "#1e3a5f", color: "#fff", border: "1px solid rgba(59,130,246,0.3)", borderRadius: "14px" } },
-  warning: { style: { background: "#431407", color: "#fff", border: "1px solid rgba(245,158,11,0.3)", borderRadius: "14px" } },
-};

@@ -11,18 +11,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
+import { formatCurrency } from "@ekda/shared";
+import { EXPORT_PRODUCTS } from "@ekda/demo";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 52) / 2;
 
-const PRODUCTS = [
-  { id: "1", name: "Dried Crayfish", vendor: "Lagos Fresh", price: "₦8,500/kg", emoji: "🦐", hs: "0306.17", cargo: "sea", rating: 4.9, category: "dried_produce" },
-  { id: "2", name: "Palm Oil Pure Red", vendor: "Ogun Premium", price: "₦6,800/L", emoji: "🫙", hs: "1511.10", cargo: "sea", rating: 4.7, category: "groceries" },
-  { id: "3", name: "Garri Ijebu", vendor: "Southwest Farms", price: "₦3,200/kg", emoji: "🌾", hs: "1903.00", cargo: "sea", rating: 4.9, category: "groceries" },
-  { id: "4", name: "Frozen Stockfish", vendor: "Badagry Fish Co", price: "₦22,000/kg", emoji: "🐟", hs: "0305.41", cargo: "sea", rating: 4.8, category: "frozen_produce", airRestricted: true },
-  { id: "5", name: "Bitter Kola Nuts", vendor: "Edo Naturals", price: "₦15,000/kg", emoji: "🌰", hs: "0802.80", cargo: "sea", rating: 4.8, category: "agri_commodities" },
-  { id: "6", name: "Efirin Dried Basil", vendor: "Herb Haven", price: "₦2,500/100g", emoji: "🌿", hs: "0712.90", cargo: "air", rating: 4.6, category: "dried_produce" },
-];
+// Products now from @ekda/demo
 
 const CATEGORIES = ["All", "Groceries", "Dried Produce", "Frozen", "Agri Commodities"];
 
@@ -49,7 +44,7 @@ function ProductCard({ item }: { item: typeof PRODUCTS[0] }) {
           <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
         </View>
         <View style={styles.cardFooter}>
-          <Text style={styles.cardPrice}>{item.price}</Text>
+          <Text style={styles.cardPrice}>{formatCurrency(item.price ?? 0, item.currency ?? "NGN")}</Text>
           <TouchableOpacity style={styles.addButton}>
             <Text style={styles.addButtonText}>+</Text>
           </TouchableOpacity>
@@ -95,7 +90,7 @@ export default function ExportTab() {
       </ScrollView>
 
       <FlatList
-        data={PRODUCTS}
+        data={EXPORT_PRODUCTS}
         renderItem={({ item }) => <ProductCard item={item} />}
         keyExtractor={(item) => item.id}
         numColumns={2}

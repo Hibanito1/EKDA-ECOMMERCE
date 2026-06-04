@@ -1,3 +1,5 @@
+import { validateLogin } from "@ekda/validators";
+import { validateDemoCredentials, DEMO_CREDENTIALS } from "@ekda/demo";
 import { useState } from "react";
 import {
   View,
@@ -27,10 +29,14 @@ export default function LoginScreen() {
       return;
     }
     setLoading(true);
-    // Simulate auth
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    router.replace("/(tabs)");
+    const result = validateDemoCredentials(email, password);
+    if (result.valid && result.user) {
+      setLoading(false);
+      router.replace("/(tabs)");
+    } else {
+      setLoading(false);
+      Alert.alert('Login Failed', result.error || 'Invalid credentials');
+    }
   };
 
   return (
