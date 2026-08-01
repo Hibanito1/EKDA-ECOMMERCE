@@ -4,15 +4,12 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
   TextInput,
 } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-
-const { width } = Dimensions.get("window");
 
 const CATEGORIES = [
   { icon: "🌿", label: "Groceries", href: "/(tabs)/export" },

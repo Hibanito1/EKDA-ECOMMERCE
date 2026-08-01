@@ -3,15 +3,11 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
-  ImageBackground,
 } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-
-const { width, height } = Dimensions.get("window");
 
 const FEATURES = [
   { icon: "🛡️", text: "Escrow Protected Payments" },
@@ -48,7 +44,7 @@ export default function WelcomeScreen() {
         <View style={styles.heroSection}>
           <View style={styles.tagBadge}>
             <View style={styles.tagDot} />
-            <Text style={styles.tagText}>Africa's #1 Cross-Border Marketplace</Text>
+            <Text style={styles.tagText}>{"Africa's #1 Cross-Border Marketplace"}</Text>
           </View>
 
           <Text style={styles.heroTitle}>

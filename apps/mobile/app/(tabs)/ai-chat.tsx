@@ -49,10 +49,18 @@ export default function AIChatScreen() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+  const nextMessageId = useRef(2);
+
+  const createMessage = (text: string, isBot: boolean): Message => ({
+    id: String(nextMessageId.current++),
+    text,
+    isBot,
+    timestamp: new Date(),
+  });
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
-    const userMsg: Message = { id: Date.now().toString(), text, isBot: false, timestamp: new Date() };
+    const userMsg = createMessage(text, false);
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
@@ -67,7 +75,7 @@ export default function AIChatScreen() {
     else if (lower.includes("halal") || lower.includes("eid")) reply = BOT_RESPONSES.halal!;
     else if (lower.includes("hs") || lower.includes("code") || lower.includes("customs")) reply = BOT_RESPONSES.hs!;
 
-    const botMsg: Message = { id: (Date.now() + 1).toString(), text: reply, isBot: true, timestamp: new Date() };
+    const botMsg = createMessage(reply, true);
     setMessages((prev) => [...prev, botMsg]);
     setLoading(false);
 
