@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  EKDA_COMMISSION_RATE,
-  ESCROW_FIRST_RELEASE_RATE,
-  ESCROW_SECOND_RELEASE_RATE,
-} from "@ekda/shared";
+import { integrationUnavailable } from "@/lib/integrations/guards";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,71 +12,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // In production, this would update the Supabase database and trigger
-    // payment gateway releases via Paystack/Stripe/Monnify APIs
-
     switch (action) {
-      case "create_escrow": {
-        const { total_amount, currency = "NGN" } = await req.json().catch(() => ({}));
-        const ekda_commission = total_amount * EKDA_COMMISSION_RATE;
-        const vendor_share = total_amount - ekda_commission;
-        const first_release = vendor_share * ESCROW_FIRST_RELEASE_RATE;
-        const second_release = vendor_share * ESCROW_SECOND_RELEASE_RATE;
-
-        return NextResponse.json({
-          success: true,
-          escrow: {
-            order_id,
-            total_amount,
-            currency,
-            ekda_commission,
-            vendor_share,
-            first_release_amount: first_release,
-            second_release_amount: second_release,
-            status: "held",
-          },
+      case "create_escrow":
+        return integrationUnavailable({
+          service: "Escrow account creation",
+          requiredEnv: ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+          developerAction:
+            "Persist escrow records in Supabase inside the order transaction after verified payment. Compute vendor share and commission from stored order items, not client input.",
         });
-      }
 
-      case "release_pickup": {
-        // 50% released when carrier confirms pickup
+      case "release_pickup":
         if (!carrier_id) {
           return NextResponse.json(
             { error: "carrier_id required for pickup confirmation" },
             { status: 400 }
           );
         }
-        return NextResponse.json({
-          success: true,
-          message: "First escrow release triggered (50% to vendor on carrier pickup)",
-          release_stage: "first",
-          order_status_updated_to: "picked_up",
-          escrow_status_updated_to: "partial_released",
-          triggered_at: new Date().toISOString(),
+        return integrationUnavailable({
+          service: "First escrow release",
+          requiredEnv: ["SUPABASE_SERVICE_ROLE_KEY", "PAYSTACK_SECRET_KEY or STRIPE_SECRET_KEY or MONNIFY_API_KEY"],
+          developerAction:
+            "Verify carrier pickup evidence, update order and escrow milestones in a database transaction, and call the real payout/transfer provider before marking funds released.",
         });
-      }
 
-      case "release_destination": {
-        // Final 50% released when goods arrive at destination
-        return NextResponse.json({
-          success: true,
-          message: "Final escrow release triggered (50% to vendor on destination arrival)",
-          release_stage: "second",
-          order_status_updated_to: "arrived_at_port",
-          escrow_status_updated_to: "fully_released",
-          triggered_at: new Date().toISOString(),
+      case "release_destination":
+        return integrationUnavailable({
+          service: "Final escrow release",
+          requiredEnv: ["SUPABASE_SERVICE_ROLE_KEY", "PAYSTACK_SECRET_KEY or STRIPE_SECRET_KEY or MONNIFY_API_KEY"],
+          developerAction:
+            "Verify destination-arrival evidence, resolve disputes/holds, update escrow in Supabase, and execute the final provider payout before changing order status.",
         });
-      }
 
-      case "refund": {
-        return NextResponse.json({
-          success: true,
-          message: "Full refund initiated from escrow to customer",
-          order_status_updated_to: "refunded",
-          escrow_status_updated_to: "refunded",
-          triggered_at: new Date().toISOString(),
+      case "refund":
+        return integrationUnavailable({
+          service: "Escrow refund",
+          requiredEnv: ["SUPABASE_SERVICE_ROLE_KEY", "PAYSTACK_SECRET_KEY or STRIPE_SECRET_KEY or MONNIFY_API_KEY"],
+          developerAction:
+            "Implement dispute/refund authorization, provider refund APIs, audit logs, and idempotency keys before exposing escrow refunds.",
         });
-      }
 
       default:
         return NextResponse.json(
@@ -102,19 +71,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "order_id required" }, { status: 400 });
   }
 
-  // Simulated escrow state
-  return NextResponse.json({
-    escrow: {
-      order_id,
-      total_amount: 196500,
-      currency: "NGN",
-      ekda_commission: 16500,
-      vendor_share: 180000,
-      first_release_amount: 90000,
-      second_release_amount: 90000,
-      status: "partial_released",
-      first_release_at: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
-      second_release_at: null,
-    },
+  return integrationUnavailable({
+    service: "Escrow status lookup",
+    requiredEnv: ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+    developerAction:
+      "Fetch escrow state from Supabase by authenticated order ownership or admin role. Do not return hardcoded escrow states.",
   });
 }

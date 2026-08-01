@@ -9,7 +9,7 @@
 
 ## 🎯 What Has Been Built
 
-This monorepo contains a production-ready foundation for Africa's premier cross-border marketplace. All core features are implemented as **high-quality UI with realistic simulations and proper hooks** — the main work for human developers is to wire the real backend integrations.
+This monorepo contains a production-ready foundation for Africa's premier cross-border marketplace. Demo success paths have been removed from high-risk flows so the app now fails closed at real integration boundaries. Human developers should wire the real backend, payment, escrow, AI, storage, logistics, notification, and compliance integrations before enabling production users. See `docs/REAL_WORLD_HANDOFF.md` for the current takeover checklist.
 
 ### Completed (✅ Production-Ready Structure)
 
