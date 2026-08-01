@@ -19,18 +19,16 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Missing Fields", "Please enter your email and password.");
       return;
     }
-    setLoading(true);
-    // Simulate auth
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    router.replace("/(tabs)");
+    Alert.alert(
+      "Authentication not configured",
+      "Wire Supabase Auth and secure session storage before enabling mobile login.",
+    );
   };
 
   return (
@@ -116,10 +114,9 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.signInButton, loading && styles.loadingButton]}
+            style={styles.signInButton}
             onPress={handleLogin}
             activeOpacity={0.8}
-            disabled={loading}
           >
             <LinearGradient
               colors={["#16a34a", "#15803d"]}
@@ -127,10 +124,8 @@ export default function LoginScreen() {
               end={{ x: 1, y: 0 }}
               style={styles.signInGradient}
             >
-              <Text style={styles.signInText}>
-                {loading ? "Signing in..." : "Sign In"}
-              </Text>
-              {!loading && <Text style={styles.signInArrow}>→</Text>}
+              <Text style={styles.signInText}>Sign In</Text>
+              <Text style={styles.signInArrow}>→</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -218,7 +213,6 @@ const styles = StyleSheet.create({
     elevation: 5,
     marginBottom: 20,
   },
-  loadingButton: { opacity: 0.7 },
   signInGradient: {
     flexDirection: "row",
     alignItems: "center",

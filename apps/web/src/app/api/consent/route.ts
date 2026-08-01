@@ -1,26 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { integrationUnavailable } from "@/lib/integrations/guards";
 
 export async function POST(req: NextRequest) {
   try {
-    const {
-      analytics_consent,
-      marketing_consent,
-      data_sharing_consent,
-      essential_consent = true,
-      consent_banner_version,
-      consent_source = "web",
-    } = await req.json();
+    await req.json();
 
-    // In production, save to consent_records table in Supabase
-    // const supabase = createSupabaseServerClient(url, key);
-    // await supabase.from("consent_records").upsert({ user_id, ... });
-
-    const consentId = `CONSENT-${Date.now().toString(36).toUpperCase()}`;
-
-    return NextResponse.json({
-      success: true,
-      consent_id: consentId,
-      recorded_at: new Date().toISOString(),
+    return integrationUnavailable({
+      service: "Consent recording",
+      requiredEnv: ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+      developerAction:
+        "Persist consent records with authenticated user/device context, consent version, source, and immutable audit history in Supabase.",
     });
   } catch (error) {
     console.error("Consent record error:", error);
@@ -32,14 +21,15 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("user_id");
 
-  // Return current consent status for user
-  return NextResponse.json({
-    user_id: userId,
-    analytics_consent: false,
-    marketing_consent: false,
-    data_sharing_consent: false,
-    essential_consent: true,
-    last_updated: new Date().toISOString(),
+  if (!userId) {
+    return NextResponse.json({ error: "user_id required" }, { status: 400 });
+  }
+
+  return integrationUnavailable({
+    service: "Consent lookup",
+    requiredEnv: ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+    developerAction:
+      "Read the latest consent state from Supabase for the authenticated user or anonymous device identifier.",
   });
 }
 
@@ -47,10 +37,14 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type"); // all, marketing, analytics, data_sharing
 
-  // Withdraw consent
-  return NextResponse.json({
-    success: true,
-    withdrawn_types: type === "all" ? ["analytics", "marketing", "data_sharing"] : [type],
-    withdrawn_at: new Date().toISOString(),
+  if (!type) {
+    return NextResponse.json({ error: "type required" }, { status: 400 });
+  }
+
+  return integrationUnavailable({
+    service: "Consent withdrawal",
+    requiredEnv: ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+    developerAction:
+      "Persist consent withdrawal events and recalculate effective consent state from the audit trail.",
   });
 }

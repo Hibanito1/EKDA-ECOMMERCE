@@ -4,9 +4,9 @@
 
 ---
 
-## 🎭 Demo Mode Overview
+## 🎭 Demo Mode Overview (Deprecated)
 
-Demo mode allows full testing of all features **without real credentials, real payments, or real documents**.
+Demo mode has been deprecated for real-world handoff. High-risk flows now fail closed with explicit integration-required responses instead of returning fake success data. Use this file only as a historical reference for the old demo flows; use `docs/REAL_WORLD_HANDOFF.md` for the current takeover checklist.
 
 **Enable Demo Mode:**
 ```bash
